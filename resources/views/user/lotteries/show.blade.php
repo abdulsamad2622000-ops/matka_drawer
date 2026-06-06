@@ -28,13 +28,13 @@
 
             <div class="detail-row">
                 <span class="detail-label">Ticket Price</span>
-                <span style="color:var(--gold);font-weight:700;font-size:1.2rem">
+                <span style="color:var(--teal);font-weight:700;font-size:1.2rem">
                     Rs. {{ number_format($lottery->price, 0) }}
                 </span>
             </div>
             <div class="detail-row">
                 <span class="detail-label">Prize Pool</span>
-                <span style="color:var(--gold);font-weight:700;font-size:1.4rem">
+                <span style="color:var(--teal);font-weight:700;font-size:1.4rem">
                     Rs. {{ number_format($lottery->prize_amount, 0) }}
                 </span>
             </div>
@@ -48,7 +48,7 @@
             </div>
             <div class="detail-row">
                 <span class="detail-label">Your Wallet</span>
-                <span style="color:var(--green);font-weight:700">
+                <span style="color:var(--teal);font-weight:700">
                     Rs. {{ number_format(auth()->user()->wallet_balance, 0) }}
                 </span>
             </div>
@@ -66,7 +66,9 @@
 
     <div>
         @if($lottery->status === 'active' && !$lottery->isSoldOut())
-        <div class="card" style="margin-bottom:24px">
+
+        {{-- Buy Now --}}
+        <div class="card" style="margin-bottom:16px">
             <div class="card-header"><h3>🎟️ Buy Tickets</h3></div>
             <form action="{{ route('user.lotteries.buy', $lottery) }}"
                   method="POST" style="padding:20px">
@@ -76,20 +78,42 @@
                     <input type="number" name="quantity" class="form-input"
                            value="1" min="1" max="10" id="qty" required>
                 </div>
-
                 <div class="prize-summary">
                     <span>Total Cost:</span>
-                    <strong id="totalCost" style="color:var(--gold)">
+                    <strong id="totalCost" style="color:var(--teal)">
                         Rs. {{ number_format($lottery->price, 0) }}
                     </strong>
                 </div>
-
                 <button type="submit" class="btn-primary full-width"
                         onclick="return confirm('Buy ' + document.getElementById('qty').value + ' ticket(s)?')">
                     🎟️ Buy Now
                 </button>
             </form>
         </div>
+
+        {{-- Add to Cart --}}
+        <div class="card" style="margin-bottom:16px">
+            <div class="card-header"><h3>🛒 Add to Cart</h3></div>
+            <form action="{{ route('user.cart.add', $lottery) }}"
+                  method="POST" style="padding:20px">
+                @csrf
+                <div class="form-group">
+                    <label>Quantity (max 10)</label>
+                    <input type="number" name="quantity" class="form-input"
+                           value="1" min="1" max="10" id="cartQty">
+                </div>
+                <div class="prize-summary">
+                    <span>Total:</span>
+                    <strong id="cartTotal" style="color:var(--teal)">
+                        Rs. {{ number_format($lottery->price, 0) }}
+                    </strong>
+                </div>
+                <button type="submit" class="btn-outline full-width">
+                    🛒 Add to Cart
+                </button>
+            </form>
+        </div>
+
         @elseif($lottery->isSoldOut())
         <div class="alert error">🚫 This lottery is sold out!</div>
         @else
@@ -118,14 +142,21 @@
 </div>
 
 <script>
-const qty      = document.getElementById('qty');
-const total    = document.getElementById('totalCost');
-const price    = {{ $lottery->price }};
+const price = {{ $lottery->price }};
 
+const qty = document.getElementById('qty');
+const totalCost = document.getElementById('totalCost');
 if(qty) {
     qty.addEventListener('input', () => {
-        const q = parseInt(qty.value) || 1;
-        total.textContent = 'Rs. ' + (price * q).toLocaleString();
+        totalCost.textContent = 'Rs. ' + (price * (parseInt(qty.value) || 1)).toLocaleString();
+    });
+}
+
+const cartQty = document.getElementById('cartQty');
+const cartTotal = document.getElementById('cartTotal');
+if(cartQty) {
+    cartQty.addEventListener('input', () => {
+        cartTotal.textContent = 'Rs. ' + (price * (parseInt(cartQty.value) || 1)).toLocaleString();
     });
 }
 </script>

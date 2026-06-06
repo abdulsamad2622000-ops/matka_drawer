@@ -11,6 +11,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->replace(
+            \Illuminate\Http\Middleware\ValidatePostSize::class,
+            \App\Http\Middleware\IncreasePostSize::class,
+        );
         $middleware->alias([
             'admin'         => \App\Http\Middleware\AdminMiddleware::class,
             'verified.user' => \App\Http\Middleware\VerifiedUserMiddleware::class,

@@ -6,18 +6,23 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
         Schema::table('announcements', function (Blueprint $table) {
-            $table->string('winning_number')->nullable()->after('video_path');
-            $table->boolean('show_winning_number')->default(false)->after('winning_number');
+            //
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::table('announcements', function (Blueprint $table) {
-            $table->dropColumn(['winning_number', 'show_winning_number']);
+            //
         });
     }
 };

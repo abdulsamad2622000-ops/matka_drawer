@@ -9,15 +9,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('announcements', function (Blueprint $table) {
-            $table->string('winning_number')->nullable()->after('video_path');
-            $table->boolean('show_winning_number')->default(false)->after('winning_number');
+            $table->timestamp('scheduled_at')->nullable()->after('video_expires_at');
+            $table->timestamp('next_draw_at')->nullable()->after('scheduled_at');
         });
     }
 
     public function down(): void
     {
         Schema::table('announcements', function (Blueprint $table) {
-            $table->dropColumn(['winning_number', 'show_winning_number']);
+            $table->dropColumn(['scheduled_at', 'next_draw_at']);
         });
     }
 };

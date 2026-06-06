@@ -10,17 +10,16 @@ class DashboardController extends Controller
     public function index()
     {
         $user         = auth()->user();
-        $myTickets    = $user->lotteryTickets()->with('lotteryPackage')->latest()->take(5)->get();
+        $myTickets    = $user->lotteryTickets()->latest()->take(5)->get();
         $transactions = $user->walletTransactions()->latest()->take(5)->get();
+        $myBets       = $user->bets()->latest()->take(5)->get();
 
-        // Global announcement video
         $activeAnnouncement = Announcement::where('is_active', true)
-            ->where('video_expires_at', '>', now())
             ->latest()
             ->first();
 
         return view('user.dashboard.index', compact(
-            'user', 'myTickets', 'transactions', 'activeAnnouncement'
+            'user', 'myTickets', 'transactions', 'activeAnnouncement', 'myBets'
         ));
     }
 }

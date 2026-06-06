@@ -15,7 +15,23 @@ class WalletController extends Controller
         $pendingReqs  = $user->paymentRequests()->where('status', 'pending')->count();
         return view('user.wallet.index', compact('user', 'transactions', 'pendingReqs'));
     }
+public function changePassword(Request $request)
+{
+    $request->validate([
+        'current_password' => 'required',
+        'new_password'     => 'required|string|min:6|confirmed',
+    ]);
 
+    $user = auth()->user();
+
+    if (!\Hash::check($request->current_password, $user->password)) {
+        return back()->withErrors(['current_password' => 'Current password is incorrect.']);
+    }
+
+    $user->update(['password' => \Hash::make($request->new_password)]);
+
+    return back()->with('password_success', '✅ Password changed successfully!');
+}
     public function requestDeposit(Request $request)
     {
         $request->validate([

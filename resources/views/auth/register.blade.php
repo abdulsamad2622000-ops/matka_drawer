@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register — LottoApp</title>
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <title>Register — Matka Champion</title>
+    <link rel="stylesheet" href="/css/app.css">
 </head>
 <body>
 <div class="auth-wrapper">
     <div class="auth-box">
         <div class="auth-logo">
-            <span>🎰 LottoApp</span>
+            <span>🎰 Matka Champion</span>
             <small>Create your account</small>
         </div>
 
@@ -28,7 +28,7 @@
             </div>
 
             <div class="form-group">
-                <label>Email Address</label>
+                <label>Email Address / Username</label>
                 <input type="email" name="email" class="form-input"
                        placeholder="you@example.com" value="{{ old('email') }}" required>
                 @error('email')<span class="error">{{ $message }}</span>@enderror
@@ -51,6 +51,17 @@
                 <label>Confirm Password</label>
                 <input type="password" name="password_confirmation" class="form-input"
                        placeholder="Repeat password" required>
+            </div>
+
+            <div class="form-group">
+                <label>Referral Code <span class="hint">(optional)</span></label>
+                <input type="text" name="referral_code" class="form-input mono"
+                       placeholder="e.g. ABC12345"
+                       value="{{ old('referral_code', $referralCode ?? '') }}">
+                @error('referral_code')<span class="error">{{ $message }}</span>@enderror
+                @if($referralCode ?? false)
+                <p class="helper-text" style="color:var(--teal)">✅ Referral code applied!</p>
+                @endif
             </div>
 
             <button type="submit" class="btn-primary full-width">
