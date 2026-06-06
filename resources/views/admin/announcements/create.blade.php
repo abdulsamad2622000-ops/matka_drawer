@@ -53,7 +53,7 @@
         </div>
 
         <div class="form-group">
-            <label>Winning Number <span class="hint">(optional)</span></label>
+            <label>Winning Number <span class="hint">*</span></label>
             <input type="text" name="winning_number" class="form-input mono"
                    placeholder="e.g. 12, 15, 16"
                    value="{{ old('winning_number') }}">

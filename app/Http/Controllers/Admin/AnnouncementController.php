@@ -28,7 +28,7 @@ class AnnouncementController extends Controller
             'description'           => 'nullable|string',
             'video'                 => 'required|mimetypes:video/mp4,video/avi,video/quicktime|max:102400',
             'video_display_seconds' => 'required|integer|min:10|max:300',
-            'winning_number'        => 'nullable|string|max:100',
+            'winning_number'        => 'required|string|max:100',
             'scheduled_at'          => 'nullable|date',
         ]);
 
@@ -52,22 +52,16 @@ class AnnouncementController extends Controller
             'created_by'            => auth()->id(),
         ]);
 
-        // ─── Bet Result Processing ────────────────────────────────────────
         if ($request->winning_number) {
             $this->processBetResults($request->winning_number);
         }
-        // ─────────────────────────────────────────────────────────────────
 
         return redirect()->route('admin.announcements.index')
             ->with('success', 'Announcement broadcasted! All users will see the video.');
     }
 
-    /**
-     * Pending bets check karo, won/lost mark karo, wallet credit karo.
-     */
     private function processBetResults(string $winningNumber): void
     {
-        // Sirf pending bets — eager load user taake creditWallet() kaam kare
         $pendingBets = Bet::where('status', 'pending')
                           ->with('user')
                           ->get();
@@ -78,27 +72,18 @@ class AnnouncementController extends Controller
 
         DB::transaction(function () use ($pendingBets, $winningNumber) {
             foreach ($pendingBets as $bet) {
-
                 if ((string) $bet->bet_number === (string) $winningNumber) {
-
-                    // ── WON ──────────────────────────────────────────────
                     $winAmount = $bet->bet_amount * $bet->multiplier;
-
                     $bet->update([
                         'status'     => 'won',
                         'win_amount' => $winAmount,
                     ]);
-
-                    // User ka wallet credit karo — transaction log bhi khud banta hai
                     $bet->user->creditWallet(
                         $winAmount,
                         'bet_win',
                         "Bet #{$bet->id} jeet gaye! Number: {$bet->bet_number} | {$bet->bet_type}"
                     );
-
                 } else {
-
-                    // ── LOST ─────────────────────────────────────────────
                     $bet->update([
                         'status'     => 'lost',
                         'win_amount' => 0,
