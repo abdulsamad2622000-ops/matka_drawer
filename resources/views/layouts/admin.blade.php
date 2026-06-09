@@ -24,8 +24,6 @@
         .app-wrapper {
             overflow-x: hidden;
         }
-
-        /* MOBILE */
         @media (max-width: 768px) {
             .sidebar {
                 position: fixed !important;
@@ -48,7 +46,6 @@
             .navbar-bl { display: none !important; }
             .balance-bar { font-size: 11px !important; padding: 4px 8px !important; }
         }
-
         #mobileOverlay {
             display: none;
             position: fixed;
@@ -75,10 +72,55 @@
             &nbsp;|&nbsp;
             <span>L: 0</span>
         </div>
-        <div class="navbar-user">
-            <div class="navbar-avatar">{{ substr(auth()->user()->name, 0, 1) }}</div>
-            <span>{{ Str::limit(auth()->user()->name, 10) }}</span>
-            <span>▾</span>
+
+        {{-- Profile Dropdown --}}
+        <div style="position:relative">
+            <div class="navbar-user" onclick="toggleAdminDrop()" style="cursor:pointer">
+                <div class="navbar-avatar">{{ substr(auth()->user()->name, 0, 1) }}</div>
+                <div style="display:flex;flex-direction:column;line-height:1.2">
+                    <span style="font-size:13px;font-weight:600">{{ Str::limit(auth()->user()->name, 10) }}</span>
+                    <span style="font-size:11px;color:var(--teal);font-weight:700">Admin</span>
+                </div>
+                <span>▾</span>
+            </div>
+
+            <div id="adminDrop" style="display:none;position:absolute;top:110%;right:0;min-width:200px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.3);z-index:9999;overflow:hidden">
+
+                <div style="padding:14px 16px;border-bottom:1px solid var(--border);background:var(--bg3)">
+                    <div style="display:flex;align-items:center;gap:10px">
+                        <div style="width:38px;height:38px;background:var(--teal);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff">
+                            {{ substr(auth()->user()->name, 0, 1) }}
+                        </div>
+                        <div>
+                            <div style="font-weight:700;font-size:13px">{{ auth()->user()->name }}</div>
+                            <div style="font-size:11px;color:var(--text2)">{{ auth()->user()->email }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="padding:8px">
+                    <a href="{{ route('admin.settings.index') }}"
+                       style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;text-decoration:none;color:var(--text)"
+                       onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='transparent'">
+                        <span>⚙️</span> <span style="font-size:13px">Settings</span>
+                    </a>
+                    <a href="{{ route('admin.settings.index') }}"
+                       style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;text-decoration:none;color:var(--text)"
+                       onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='transparent'">
+                        <span>🔐</span> <span style="font-size:13px">Change Password</span>
+                    </a>
+                </div>
+
+                <div style="padding:8px;border-top:1px solid var(--border)">
+                    <form action="{{ route('logout') }}" method="POST">
+                        @csrf
+                        <button type="submit"
+                            style="width:100%;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;background:rgba(239,68,68,0.1);border:none;color:#ef4444;cursor:pointer;font-size:13px;font-weight:600">
+                            <span>🚪</span> Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 </nav>
@@ -181,6 +223,18 @@
         link.addEventListener('click', function() {
             if (isMobile()) closeMobileSidebar();
         });
+    });
+
+    function toggleAdminDrop() {
+        const drop = document.getElementById('adminDrop');
+        drop.style.display = drop.style.display === 'block' ? 'none' : 'block';
+    }
+
+    document.addEventListener('click', function(e) {
+        const drop = document.getElementById('adminDrop');
+        if(drop && !e.target.closest('.navbar-user') && !e.target.closest('#adminDrop')) {
+            drop.style.display = 'none';
+        }
     });
 </script>
 
