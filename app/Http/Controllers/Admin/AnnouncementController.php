@@ -38,6 +38,9 @@ class AnnouncementController extends Controller
         $scheduledAt = $request->scheduled_at ? \Carbon\Carbon::parse($request->scheduled_at) : now();
         $expiresAt   = $scheduledAt->copy()->addSeconds((int) $request->video_display_seconds);
 
+        // Winners data generate karo
+        $winnersData = $this->generateWinnersData($request->winning_number);
+
         Announcement::create([
             'title'                 => $request->title,
             'description'           => $request->description,
@@ -50,6 +53,7 @@ class AnnouncementController extends Controller
             'next_draw_at'          => null,
             'is_active'             => true,
             'created_by'            => auth()->id(),
+            'winners_data'          => $winnersData,
         ]);
 
         if ($request->winning_number) {
@@ -60,34 +64,93 @@ class AnnouncementController extends Controller
             ->with('success', 'Announcement broadcasted! All users will see the video.');
     }
 
+    /**
+     * Winners data generate karo — real + fake
+     */
+    private function generateWinnersData(string $winningNumber): array
+    {
+        $winners = [];
+
+        // ── Real Winners ─────────────────────────────────────
+        $realWinners = Bet::where('status', 'pending')
+            ->where('bet_number', $winningNumber)
+            ->with('user')
+            ->get();
+
+        foreach ($realWinners as $bet) {
+            $winAmount = $bet->bet_amount * $bet->multiplier;
+            $winners[] = [
+                'name'       => $this->maskName($bet->user->name),
+                'amount'     => $winAmount,
+                'is_real'    => true,
+                'bet_type'   => $bet->bet_type,
+            ];
+        }
+
+        // ── Fake Winners (10 total) ───────────────────────────
+        $fakeNames = [
+            'Ali H.', 'Sara K.', 'Ahmed R.', 'Fatima M.', 'Usman T.',
+            'Ayesha N.', 'Bilal S.', 'Hina A.', 'Zara Q.', 'Hassan F.',
+            'Nadia J.', 'Imran B.', 'Sana W.', 'Kamran D.', 'Mehwish L.',
+        ];
+
+        $betTypes = ['1x7', '1x70', '1x700', '1x7000'];
+        $multipliers = ['1x7' => 7, '1x70' => 70, '1x700' => 700, '1x7000' => 7000];
+
+        shuffle($fakeNames);
+        $needed = max(0, 10 - count($winners));
+
+        for ($i = 0; $i < $needed; $i++) {
+            $betType   = $betTypes[array_rand($betTypes)];
+            $betAmount = rand(1, 10) * 1000; // Rs. 1000 to 10,000
+            $winAmount = $betAmount * $multipliers[$betType];
+
+            $winners[] = [
+                'name'     => $fakeNames[$i % count($fakeNames)],
+                'amount'   => $winAmount,
+                'is_real'  => false,
+                'bet_type' => $betType,
+            ];
+        }
+
+        // Shuffle so real winners mix with fake
+        shuffle($winners);
+
+        return $winners;
+    }
+
+    /**
+     * Name mask karo — Ali Hassan → Ali H***
+     */
+    private function maskName(string $name): string
+    {
+        $parts = explode(' ', $name);
+        if (count($parts) >= 2) {
+            return $parts[0] . ' ' . substr($parts[1], 0, 1) . '***';
+        }
+        return substr($name, 0, 3) . '***';
+    }
+
     private function processBetResults(string $winningNumber): void
     {
         $pendingBets = Bet::where('status', 'pending')
                           ->with('user')
                           ->get();
 
-        if ($pendingBets->isEmpty()) {
-            return;
-        }
+        if ($pendingBets->isEmpty()) return;
 
         DB::transaction(function () use ($pendingBets, $winningNumber) {
             foreach ($pendingBets as $bet) {
                 if ((string) $bet->bet_number === (string) $winningNumber) {
                     $winAmount = $bet->bet_amount * $bet->multiplier;
-                    $bet->update([
-                        'status'     => 'won',
-                        'win_amount' => $winAmount,
-                    ]);
+                    $bet->update(['status' => 'won', 'win_amount' => $winAmount]);
                     $bet->user->creditWallet(
                         $winAmount,
                         'bet_win',
                         "Bet #{$bet->id} jeet gaye! Number: {$bet->bet_number} | {$bet->bet_type}"
                     );
                 } else {
-                    $bet->update([
-                        'status'     => 'lost',
-                        'win_amount' => 0,
-                    ]);
+                    $bet->update(['status' => 'lost', 'win_amount' => 0]);
                 }
             }
         });
@@ -110,14 +173,10 @@ class AnnouncementController extends Controller
 
     public function setNextDraw(Request $request, Announcement $announcement)
     {
-        $request->validate([
-            'next_draw_at' => 'required|date',
-        ]);
-
+        $request->validate(['next_draw_at' => 'required|date']);
         $announcement->update([
             'next_draw_at' => \Carbon\Carbon::parse($request->next_draw_at),
         ]);
-
         return back()->with('success', 'Next draw date set successfully!');
     }
 }

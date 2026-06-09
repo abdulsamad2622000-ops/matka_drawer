@@ -311,7 +311,7 @@ textarea.form-input { resize: vertical; min-height: 80px; }
 
 /* ── Responsive ──────────────────────────────────────────── */
 @media (max-width: 768px) {
-    .sidebar      { display: none; }
+    .sidebar      { display: block; }
     .main-content { margin-left: 0; padding: 12px; }
     .two-col      { grid-template-columns: 1fr; }
     .stats-grid   { grid-template-columns: 1fr 1fr; }

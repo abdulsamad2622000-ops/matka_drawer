@@ -16,13 +16,52 @@
         }
         .main-content {
             transition: margin-left .3s ease;
+            overflow-x: hidden;
         }
         .main-content.expanded {
             margin-left: 0 !important;
         }
+        .app-wrapper {
+            overflow-x: hidden;
+        }
+
+        /* MOBILE */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                height: 100vh !important;
+                z-index: 1000 !important;
+                width: 220px !important;
+                transform: translateX(-220px) !important;
+                transition: transform .3s ease !important;
+            }
+            .sidebar.mobile-open {
+                transform: translateX(0px) !important;
+            }
+            .main-content {
+                margin-left: 0 !important;
+                width: 100% !important;
+                max-width: 100vw !important;
+            }
+            .navbar-bl { display: none !important; }
+            .balance-bar { font-size: 11px !important; padding: 4px 8px !important; }
+        }
+
+        #mobileOverlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        #mobileOverlay.active { display: block; }
     </style>
 </head>
 <body>
+
+<div id="mobileOverlay" onclick="closeMobileSidebar()"></div>
 
 <!-- TOP NAVBAR -->
 <nav class="top-navbar">
@@ -36,8 +75,6 @@
             &nbsp;|&nbsp;
             <span>L: 0</span>
         </div>
-
-
         <div class="navbar-user">
             <div class="navbar-avatar">{{ substr(auth()->user()->name, 0, 1) }}</div>
             <span>{{ Str::limit(auth()->user()->name, 10) }}</span>
@@ -69,28 +106,26 @@
 <div class="app-wrapper">
     <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
-     <nav class="sidebar-nav">
-    <a href="{{ route('admin.dashboard') }}" class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-        <span class="icon">🏠</span> Dashboard
-    </a>
-    <a href="{{ route('admin.payments.index') }}" class="nav-item {{ request()->routeIs('admin.payments*') ? 'active' : '' }}">
-        <span class="icon">💳</span> Payments
-    </a>
-
-    <a href="{{ route('admin.withdrawals.index') }}" class="nav-item {{ request()->routeIs('admin.withdrawals*') ? 'active' : '' }}">
-    <span class="icon">💸</span> Withdrawals
-</a>
-   
-    <a href="{{ route('admin.users.index') }}" class="nav-item {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
-        <span class="icon">👥</span> Users
-    </a>
-    <a href="{{ route('admin.announcements.index') }}" class="nav-item {{ request()->routeIs('admin.announcements*') ? 'active' : '' }}">
-        <span class="icon">📢</span> Announcements
-    </a>
-    <a href="{{ route('admin.settings.index') }}" class="nav-item {{ request()->routeIs('admin.settings*') ? 'active' : '' }}">
-        <span class="icon">⚙️</span> Settings
-    </a>
-</nav>
+        <nav class="sidebar-nav">
+            <a href="{{ route('admin.dashboard') }}" class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                <span class="icon">🏠</span> Dashboard
+            </a>
+            <a href="{{ route('admin.payments.index') }}" class="nav-item {{ request()->routeIs('admin.payments*') ? 'active' : '' }}">
+                <span class="icon">💳</span> Payments
+            </a>
+            <a href="{{ route('admin.withdrawals.index') }}" class="nav-item {{ request()->routeIs('admin.withdrawals*') ? 'active' : '' }}">
+                <span class="icon">💸</span> Withdrawals
+            </a>
+            <a href="{{ route('admin.users.index') }}" class="nav-item {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
+                <span class="icon">👥</span> Users
+            </a>
+            <a href="{{ route('admin.announcements.index') }}" class="nav-item {{ request()->routeIs('admin.announcements*') ? 'active' : '' }}">
+                <span class="icon">📢</span> Announcements
+            </a>
+            <a href="{{ route('admin.settings.index') }}" class="nav-item {{ request()->routeIs('admin.settings*') ? 'active' : '' }}">
+                <span class="icon">⚙️</span> Settings
+            </a>
+        </nav>
         <div class="sidebar-bottom">
             <div class="user-chip">
                 <div class="user-avatar">{{ substr(auth()->user()->name, 0, 1) }}</div>
@@ -123,10 +158,29 @@
     const btn     = document.getElementById('hamburgerBtn');
     const sidebar = document.getElementById('sidebar');
     const main    = document.getElementById('mainContent');
+    const overlay = document.getElementById('mobileOverlay');
+
+    function isMobile() { return window.innerWidth <= 768; }
 
     btn.addEventListener('click', function() {
-        sidebar.classList.toggle('hidden');
-        main.classList.toggle('expanded');
+        if (isMobile()) {
+            sidebar.classList.toggle('mobile-open');
+            overlay.classList.toggle('active');
+        } else {
+            sidebar.classList.toggle('hidden');
+            main.classList.toggle('expanded');
+        }
+    });
+
+    function closeMobileSidebar() {
+        sidebar.classList.remove('mobile-open');
+        overlay.classList.remove('active');
+    }
+
+    document.querySelectorAll('.sidebar .nav-item').forEach(function(link) {
+        link.addEventListener('click', function() {
+            if (isMobile()) closeMobileSidebar();
+        });
     });
 </script>
 

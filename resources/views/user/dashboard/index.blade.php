@@ -35,11 +35,51 @@
 <div class="page-header" style="display:flex;align-items:center;justify-content:space-between">
     <h1>Welcome, {{ auth()->user()->name }}! 👋</h1>
     <div style="display:flex;align-items:center;gap:16px;font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700">
-        <span>AK = 1</span>
+        <span>A = 1</span>
         <span style="color:var(--text2)">&</span>
         <span>J = 0</span>
     </div>
 </div>
+
+
+{{-- WINNERS SLIDE --}}
+@if($activeAnnouncement && $activeAnnouncement->winners_data && count($activeAnnouncement->winners_data) > 0)
+<div style="margin-bottom:12px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;overflow:hidden">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span>🏆</span>
+        <span style="font-weight:700;font-size:13px">Lucky Winners</span>
+        <span style="background:rgba(255,193,7,0.15);color:#f59e0b;padding:1px 8px;border-radius:20px;font-size:10px;font-weight:700">LATEST DRAW</span>
+    </div>
+    <div style="overflow:hidden">
+        <div id="winnersSlide" style="display:flex;gap:10px;animation:slideWinners 20s linear infinite;width:max-content">
+            @foreach(array_merge($activeAnnouncement->winners_data, $activeAnnouncement->winners_data) as $winner)
+            <div style="background:rgba(255,193,7,0.08);border:1px solid rgba(255,193,7,0.25);border-radius:8px;padding:6px 12px;min-width:160px;flex-shrink:0;display:flex;align-items:center;gap:8px">
+                <span style="width:24px;height:24px;background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;font-weight:700;flex-shrink:0">
+                    {{ substr($winner['name'], 0, 1) }}
+                </span>
+                <div>
+                    <div style="font-weight:700;font-size:12px;display:flex;align-items:center;gap:4px">
+                        {{ $winner['name'] }}
+                        @if($winner['is_real'])
+                        <span style="font-size:8px;background:var(--teal);color:#fff;padding:1px 4px;border-radius:6px">✓</span>
+                        @endif
+                    </div>
+                    <div style="color:#f59e0b;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700">
+                        Rs. {{ number_format($winner['amount'], 0) }}
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+</div>
+<style>
+@keyframes slideWinners {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+</style>
+@endif
 
 {{-- VIDEO BANNER --}}
 @if($activeAnnouncement)
@@ -81,17 +121,6 @@
 </div>
 @endif
 
-{{-- WALLET HERO --}}
-<div class="wallet-hero">
-    <div>
-        <span class="balance-label">💳 Wallet Balance</span>
-        <span class="balance-amount">Rs. {{ number_format(auth()->user()->wallet_balance, 2) }}</span>
-    </div>
-    <div class="wallet-actions">
-        <a href="{{ route('user.wallet.index') }}" class="btn-outline">Transaction History</a>
-        <a href="{{ route('user.wallet.index') }}#deposit" class="btn-primary">+ Add Funds</a>
-    </div>
-</div>
 
 {{-- STATS --}}
 <div class="stats-grid mini">
@@ -118,31 +147,7 @@
     </div>
 </div>
 
-{{-- REFERRAL SECTION --}}
-<div style="margin-top:24px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-        <h3 style="margin:0">🔗 Invite Friends & Earn Bonus</h3>
-        <span style="font-size:12px;color:var(--text2)">
-            Bonus per referral: <strong style="color:var(--teal)">Rs. {{ \App\Models\Setting::get('referral_bonus', 100) }}</strong>
-        </span>
-    </div>
-    <p style="color:var(--text2);font-size:13px;margin-bottom:12px">
-        Share your referral link — when your friend signs up, you get a bonus in your wallet!
-    </p>
-    <div style="display:flex;gap:8px;align-items:center">
-        <input type="text" id="referralLink" readonly
-               value="{{ url('/register?ref=' . auth()->user()->referral_code) }}"
-               class="form-input mono" style="font-size:12px">
-        <button onclick="copyReferral()" class="btn-primary" style="white-space:nowrap;padding:10px 16px">
-            📋 Copy
-        </button>
-    </div>
-    @if(auth()->user()->referredUsers()->count() > 0)
-    <p style="margin-top:10px;font-size:12px;color:var(--teal)">
-        ✅ {{ auth()->user()->referredUsers()->count() }} friend(s) joined using your link!
-    </p>
-    @endif
-</div>
+
 
 {{-- PLACE BET SECTION --}}
 <div style="margin-top:24px">
@@ -456,5 +461,29 @@ document.getElementById('ticketModal').addEventListener('click', function(e) {
     if (e.target === this) closeTicketModal();
 });
 </script>
-
+{{-- REFERRAL SECTION --}}
+<div style="margin-top:24px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <h3 style="margin:0">🔗 Invite Friends & Earn Bonus</h3>
+        <span style="font-size:12px;color:var(--text2)">
+            Bonus per referral: <strong style="color:var(--teal)">Rs. {{ \App\Models\Setting::get('referral_bonus', 100) }}</strong>
+        </span>
+    </div>
+    <p style="color:var(--text2);font-size:13px;margin-bottom:12px">
+        Share your referral link — when your friend signs up, you get a bonus in your wallet!
+    </p>
+    <div style="display:flex;gap:8px;align-items:center">
+        <input type="text" id="referralLink" readonly
+               value="{{ url('/register?ref=' . auth()->user()->referral_code) }}"
+               class="form-input mono" style="font-size:12px">
+        <button onclick="copyReferral()" class="btn-primary" style="white-space:nowrap;padding:10px 16px">
+            📋 Copy
+        </button>
+    </div>
+    @if(auth()->user()->referredUsers()->count() > 0)
+    <p style="margin-top:10px;font-size:12px;color:var(--teal)">
+        ✅ {{ auth()->user()->referredUsers()->count() }} friend(s) joined using your link!
+    </p>
+    @endif
+</div>
 @endsection
