@@ -88,6 +88,12 @@ public function withdrawalRequests()
         });
     }
 
+
+    public function supportTickets()
+{
+    return $this->hasMany(SupportTicket::class);
+}
+
     public function debitWallet(float $amount, string $purpose, string $desc = ''): bool
     {
         if ($this->wallet_balance < $amount) return false;

@@ -7,7 +7,6 @@
     <title>@yield('title', 'Matka Champion')</title>
     <link rel="stylesheet" href="/css/app.css">
     <style>
-        /* DESKTOP SIDEBAR */
         .sidebar {
             transition: transform .3s ease, width .3s ease;
         }
@@ -22,8 +21,6 @@
         .main-content.expanded {
             margin-left: 0 !important;
         }
-
-        /* MOBILE */
         @media (max-width: 768px) {
             .sidebar {
                 position: fixed !important;
@@ -47,8 +44,6 @@
             .navbar-logo { font-size: 12px !important; }
             .balance-bar { font-size: 11px !important; padding: 4px 8px !important; }
         }
-
-        /* OVERLAY */
         #mobileOverlay {
             display: none;
             position: fixed;
@@ -145,6 +140,11 @@
                        onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='transparent'">
                         <span>🔗</span> <span style="font-size:13px">My Referrals</span>
                     </a>
+                    <a href="{{ route('user.support.index') }}"
+   style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;text-decoration:none;color:var(--text)"
+   onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='transparent'">
+    <span>🎧</span> <span style="font-size:13px">Support</span>
+</a>
                     <a href="{{ route('user.wallet.index') }}#change-password"
                        style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;text-decoration:none;color:var(--text)"
                        onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='transparent'">
@@ -218,6 +218,9 @@
                 </span>
                 @endif
             </a>
+           <a href="{{ route('user.support.index') }}" class="nav-item {{ request()->routeIs('user.support*') ? 'active' : '' }}">
+    <span class="icon">🎧</span> Support
+</a>
         </nav>
         <div class="sidebar-bottom">
             <div class="user-chip">
@@ -268,7 +271,6 @@ function closeMobileSidebar() {
     overlay.classList.remove('active');
 }
 
-// Close sidebar when nav link clicked on mobile
 document.querySelectorAll('.sidebar .nav-item').forEach(function(link) {
     link.addEventListener('click', function() {
         if (isMobile()) closeMobileSidebar();

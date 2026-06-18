@@ -164,6 +164,19 @@
             <a href="{{ route('admin.announcements.index') }}" class="nav-item {{ request()->routeIs('admin.announcements*') ? 'active' : '' }}">
                 <span class="icon">📢</span> Announcements
             </a>
+
+<a href="{{ route('admin.support.index') }}" class="nav-item {{ request()->routeIs('admin.support*') ? 'active' : '' }}">
+    <span class="icon">🎧</span> Support
+    @php $openTickets = \App\Models\SupportTicket::where('status','open')->count(); @endphp
+    @if($openTickets > 0)
+    <span style="margin-left:auto;background:#ef4444;color:#fff;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px">
+        {{ $openTickets }}
+    </span>
+    @endif
+</a>
+
+
+
             <a href="{{ route('admin.settings.index') }}" class="nav-item {{ request()->routeIs('admin.settings*') ? 'active' : '' }}">
                 <span class="icon">⚙️</span> Settings
             </a>

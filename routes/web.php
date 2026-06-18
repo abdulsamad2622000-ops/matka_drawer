@@ -5,7 +5,6 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
 use App\Http\Controllers\Admin\PaymentController as AdminPayment;
-
 use App\Http\Controllers\Admin\UserController as AdminUser;
 use App\Http\Controllers\Admin\AnnouncementController as AdminAnnouncement;
 use App\Http\Controllers\User\DashboardController as UserDashboard;
@@ -28,22 +27,19 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 // ── Admin Routes ──────────────────────────────────────────────
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/dashboard', [AdminDashboard::class, 'index'])->name('dashboard');
-Route::post('settings/change-password', [App\Http\Controllers\Admin\SettingController::class, 'changePassword'])->name('settings.change-password');
-
-Route::get('/withdrawals',                         [App\Http\Controllers\Admin\WithdrawalController::class, 'index'])->name('withdrawals.index');
-Route::post('/withdrawals/{withdrawal}/approve',   [App\Http\Controllers\Admin\WithdrawalController::class, 'approve'])->name('withdrawals.approve');
-Route::post('/withdrawals/{withdrawal}/reject',    [App\Http\Controllers\Admin\WithdrawalController::class, 'reject'])->name('withdrawals.reject');
-
-
-
 
     Route::get('settings', [App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
     Route::put('settings', [App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
+    Route::post('settings/change-password', [App\Http\Controllers\Admin\SettingController::class, 'changePassword'])->name('settings.change-password');
 
     Route::get('/payments',                    [AdminPayment::class, 'index'])->name('payments.index');
     Route::get('/payments/{payment}',          [AdminPayment::class, 'show'])->name('payments.show');
     Route::post('/payments/{payment}/approve', [AdminPayment::class, 'approve'])->name('payments.approve');
     Route::post('/payments/{payment}/reject',  [AdminPayment::class, 'reject'])->name('payments.reject');
+
+    Route::get('/withdrawals',                       [App\Http\Controllers\Admin\WithdrawalController::class, 'index'])->name('withdrawals.index');
+    Route::post('/withdrawals/{withdrawal}/approve', [App\Http\Controllers\Admin\WithdrawalController::class, 'approve'])->name('withdrawals.approve');
+    Route::post('/withdrawals/{withdrawal}/reject',  [App\Http\Controllers\Admin\WithdrawalController::class, 'reject'])->name('withdrawals.reject');
 
     Route::get('/users',                [AdminUser::class, 'index'])->name('users.index');
     Route::get('/users/{user}',         [AdminUser::class, 'show'])->name('users.show');
@@ -55,21 +51,24 @@ Route::post('/withdrawals/{withdrawal}/reject',    [App\Http\Controllers\Admin\W
     Route::post('/announcements/{announcement}/destroy',               [AdminAnnouncement::class, 'destroy'])->name('announcements.destroy');
     Route::post('/announcements/{announcement}/remove-winning-number', [AdminAnnouncement::class, 'removeWinningNumber'])->name('announcements.remove-winning-number');
     Route::post('/announcements/{announcement}/set-next-draw',         [AdminAnnouncement::class, 'setNextDraw'])->name('announcements.set-next-draw');
+
+    Route::get('/support',                 [App\Http\Controllers\Admin\SupportController::class, 'index'])->name('support.index');
+    Route::get('/support/{ticket}',        [App\Http\Controllers\Admin\SupportController::class, 'show'])->name('support.show');
+    Route::post('/support/{ticket}/reply', [App\Http\Controllers\Admin\SupportController::class, 'reply'])->name('support.reply');
+    Route::post('/support/{ticket}/close', [App\Http\Controllers\Admin\SupportController::class, 'close'])->name('support.close');
+    Route::delete('/support/{ticket}',     [App\Http\Controllers\Admin\SupportController::class, 'destroy'])->name('support.destroy');
 });
 
 // ── User Routes ───────────────────────────────────────────────
 Route::prefix('user')->name('user.')->middleware(['auth', 'verified.user'])->group(function () {
     Route::get('/dashboard', [UserDashboard::class, 'index'])->name('dashboard');
 
-
-Route::post('/wallet/withdraw', [App\Http\Controllers\User\WithdrawalController::class, 'store'])->name('wallet.withdraw');
-
-Route::post('/change-password', [UserWallet::class, 'changePassword'])->name('wallet.change-password');
-
     Route::get('/wallet',          [UserWallet::class, 'index'])->name('wallet.index');
     Route::post('/wallet/deposit', [UserWallet::class, 'requestDeposit'])->name('wallet.deposit');
+    Route::post('/wallet/withdraw', [App\Http\Controllers\User\WithdrawalController::class, 'store'])->name('wallet.withdraw');
+    Route::post('/change-password', [UserWallet::class, 'changePassword'])->name('wallet.change-password');
 
-Route::get('/referrals', [App\Http\Controllers\User\ReferralController::class, 'index'])->name('referrals.index');
+    Route::get('/referrals', [App\Http\Controllers\User\ReferralController::class, 'index'])->name('referrals.index');
 
     Route::get('/lotteries',                [UserLottery::class, 'index'])->name('lotteries.index');
     Route::get('/lotteries/{lottery}',      [UserLottery::class, 'show'])->name('lotteries.show');
@@ -85,6 +84,11 @@ Route::get('/referrals', [App\Http\Controllers\User\ReferralController::class, '
 
     Route::get('/bets',  [UserBet::class, 'index'])->name('bets.index');
     Route::post('/bets', [UserBet::class, 'store'])->name('bets.store');
+
+    Route::get('/support',                 [App\Http\Controllers\User\SupportController::class, 'index'])->name('support.index');
+    Route::post('/support',                [App\Http\Controllers\User\SupportController::class, 'store'])->name('support.store');
+    Route::get('/support/{ticket}',        [App\Http\Controllers\User\SupportController::class, 'show'])->name('support.show');
+    Route::post('/support/{ticket}/reply', [App\Http\Controllers\User\SupportController::class, 'reply'])->name('support.reply');
 });
 
 // ── Root Redirect ─────────────────────────────────────────────

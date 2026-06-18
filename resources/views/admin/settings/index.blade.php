@@ -45,14 +45,9 @@
                 </div>
                 <div>
                     <label style="display:block;margin-bottom:6px;font-size:13px;color:var(--text2)">Account Type</label>
-                    <select name="payment_account_type" class="form-input">
-                        @foreach(['JazzCash','EasyPaisa','Bank Transfer','HBL','MCB','UBL','Meezan Bank'] as $type)
-                        <option value="{{ $type }}"
-                            {{ old('payment_account_type', $settings['payment_account_type']) === $type ? 'selected' : '' }}>
-                            {{ $type }}
-                        </option>
-                        @endforeach
-                    </select>
+                  <input type="text" name="payment_account_type"
+       value="{{ old('payment_account_type', $settings['payment_account_type']) }}"
+       class="form-input" placeholder="e.g. JazzCash, EasyPaisa, HBL">
                 </div>
                 <div>
                     <label style="display:block;margin-bottom:6px;font-size:13px;color:var(--text2)">Payment Instructions (optional)</label>
