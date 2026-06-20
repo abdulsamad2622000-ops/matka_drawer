@@ -15,10 +15,10 @@ class LoginController extends Controller
 
     public function login(Request $request)
     {
-        $request->validate([
-            'email'    => 'required|email',
-            'password' => 'required|string|min:6',
-        ]);
+       $request->validate([
+    'email'    => 'required|string',
+    'password' => 'required|string|min:6',
+]);
 
         $credentials = $request->only('email', 'password');
 
