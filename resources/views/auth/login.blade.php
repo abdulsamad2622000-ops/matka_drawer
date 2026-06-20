@@ -26,7 +26,6 @@
             box-shadow: 0 20px 60px rgba(0,0,0,0.5);
         }
 
-        /* LEFT SIDE */
         .left-panel {
             width: 55%;
             background: linear-gradient(135deg, #1a0000 0%, #3d0000 50%, #1a0000 100%);
@@ -68,7 +67,6 @@
             justify-content: center;
         }
 
-        /* MATKA (POT) */
         .matka {
             position: absolute;
             bottom: 40px;
@@ -88,7 +86,6 @@
             filter: drop-shadow(0 10px 30px rgba(255,0,0,0.4));
         }
 
-        /* DOLLARS flying out */
         .dollar {
             position: absolute;
             font-size: 22px;
@@ -96,31 +93,11 @@
             opacity: 0;
         }
 
-        .dollar:nth-child(1) {
-            left: 50%;
-            top: 30px;
-            animation-delay: 0s;
-        }
-        .dollar:nth-child(2) {
-            left: 30%;
-            top: 20px;
-            animation-delay: 0.3s;
-        }
-        .dollar:nth-child(3) {
-            left: 65%;
-            top: 25px;
-            animation-delay: 0.6s;
-        }
-        .dollar:nth-child(4) {
-            left: 20%;
-            top: 50px;
-            animation-delay: 0.9s;
-        }
-        .dollar:nth-child(5) {
-            left: 72%;
-            top: 50px;
-            animation-delay: 1.2s;
-        }
+        .dollar:nth-child(1) { left: 50%; top: 30px; animation-delay: 0s; }
+        .dollar:nth-child(2) { left: 30%; top: 20px; animation-delay: 0.3s; }
+        .dollar:nth-child(3) { left: 65%; top: 25px; animation-delay: 0.6s; }
+        .dollar:nth-child(4) { left: 20%; top: 50px; animation-delay: 0.9s; }
+        .dollar:nth-child(5) { left: 72%; top: 50px; animation-delay: 1.2s; }
 
         @keyframes flyOut {
             0%   { opacity: 0; transform: translateY(80px) scale(0.5); }
@@ -129,7 +106,6 @@
             100% { opacity: 0; transform: translateY(-60px) scale(0.8); }
         }
 
-        /* GLOW RING */
         .glow-ring {
             position: absolute;
             bottom: 30px;
@@ -147,7 +123,6 @@
             100% { opacity: 1; transform: translateX(-50%) scaleX(1.2); }
         }
 
-        /* TEXT BELOW MATKA */
         .matka-label {
             position: absolute;
             bottom: 8px;
@@ -161,7 +136,6 @@
             white-space: nowrap;
         }
 
-        /* RIGHT SIDE */
         .right-panel {
             width: 45%;
             padding: 50px 45px;
@@ -205,9 +179,7 @@
             margin-bottom: 32px;
         }
 
-        .form-group {
-            margin-bottom: 20px;
-        }
+        .form-group { margin-bottom: 20px; }
 
         .form-group label {
             display: block;
@@ -217,9 +189,7 @@
             margin-bottom: 8px;
         }
 
-        .input-wrap {
-            position: relative;
-        }
+        .input-wrap { position: relative; }
 
         .form-group input {
             width: 100%;
@@ -314,88 +284,49 @@
     <div class="left-panel">
         <div class="scene">
 
-            <!-- Dollars flying out -->
             <div class="dollar">💵</div>
             <div class="dollar">💰</div>
             <div class="dollar">💵</div>
             <div class="dollar">💸</div>
             <div class="dollar">💵</div>
 
-            <!-- Matka (Clay Pot) SVG -->
-           <div class="matka">
-    <svg viewBox="0 0 200 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-            <linearGradient id="potGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#d4622a"/>
-                <stop offset="40%" stop-color="#b5451a"/>
-                <stop offset="100%" stop-color="#7a2a0a"/>
-            </linearGradient>
-            <linearGradient id="shineGrad" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stop-color="rgba(255,180,120,0.4)"/>
-                <stop offset="50%" stop-color="rgba(255,255,255,0.15)"/>
-                <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
-            </linearGradient>
-        </defs>
+            <div class="matka">
+                <svg viewBox="0 0 200 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="potGrad" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stop-color="#d4622a"/>
+                            <stop offset="40%" stop-color="#b5451a"/>
+                            <stop offset="100%" stop-color="#7a2a0a"/>
+                        </linearGradient>
+                        <linearGradient id="shineGrad" x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0%" stop-color="rgba(255,180,120,0.4)"/>
+                            <stop offset="50%" stop-color="rgba(255,255,255,0.15)"/>
+                            <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
+                        </linearGradient>
+                    </defs>
 
-        <!-- Pot wide body -->
-        <path d="M30 90 Q15 80 18 110 Q22 145 100 158 Q178 145 182 110 Q185 80 170 90 Q160 55 100 48 Q40 55 30 90 Z"
-              fill="url(#potGrad)"/>
+                    <path d="M30 90 Q15 80 18 110 Q22 145 100 158 Q178 145 182 110 Q185 80 170 90 Q160 55 100 48 Q40 55 30 90 Z" fill="url(#potGrad)"/>
+                    <path d="M38 85 Q28 105 32 130 Q36 148 55 155" stroke="rgba(255,160,90,0.35)" stroke-width="10" stroke-linecap="round" fill="none"/>
+                    <path d="M72 48 Q68 32 72 22 Q100 14 128 22 Q132 32 128 48 Z" fill="#c45520"/>
+                    <ellipse cx="100" cy="22" rx="28" ry="9" fill="#a03d10"/>
+                    <ellipse cx="100" cy="21" rx="20" ry="6" fill="#3a1000"/>
+                    <ellipse cx="100" cy="48" rx="30" ry="10" fill="#c45520"/>
+                    <path d="M42 82 Q100 72 158 82" stroke="rgba(255,255,255,0.7)" stroke-width="3" fill="none" stroke-linecap="round"/>
+                    <path d="M52 95 L58 88 M55 97 L63 91 M50 100 L57 95" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M142 95 L148 88 M145 97 L153 91 M140 100 L147 95" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M94 90 L100 83 M97 92 L105 86 M92 95 L99 90" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M28 112 Q100 100 172 112" stroke="rgba(255,255,255,0.7)" stroke-width="3" fill="none" stroke-linecap="round"/>
+                    <path d="M32 122 Q50 117 68 122 Q86 127 104 122 Q122 117 140 122 Q158 127 170 122" stroke="rgba(255,255,255,0.6)" stroke-width="2" fill="none" stroke-linecap="round"/>
+                    <path d="M34 130 Q52 125 70 130 Q88 135 106 130 Q124 125 142 130 Q158 135 168 130" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                    <path d="M32 140 Q100 130 168 140" stroke="rgba(255,255,255,0.6)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                    <path d="M48 148 L54 148 M62 150 L68 150 M76 151 L82 151" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M118 151 L124 151 M132 150 L138 150 M146 148 L152 148" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" stroke-linecap="round"/>
+                    <ellipse cx="100" cy="157" rx="55" ry="12" fill="#8B3510"/>
+                    <ellipse cx="100" cy="165" rx="50" ry="6" fill="rgba(0,0,0,0.2)"/>
+                </svg>
+            </div>
 
-        <!-- Shine on left side -->
-        <path d="M38 85 Q28 105 32 130 Q36 148 55 155"
-              stroke="rgba(255,160,90,0.35)" stroke-width="10" stroke-linecap="round" fill="none"/>
-
-        <!-- Neck -->
-        <path d="M72 48 Q68 32 72 22 Q100 14 128 22 Q132 32 128 48 Z"
-              fill="#c45520"/>
-
-        <!-- Neck rim top -->
-        <ellipse cx="100" cy="22" rx="28" ry="9" fill="#a03d10"/>
-
-        <!-- Neck rim inner dark -->
-        <ellipse cx="100" cy="21" rx="20" ry="6" fill="#3a1000"/>
-
-        <!-- Neck bottom join -->
-        <ellipse cx="100" cy="48" rx="30" ry="10" fill="#c45520"/>
-
-        <!-- White stripe pattern 1 (top) -->
-        <path d="M42 82 Q100 72 158 82" stroke="rgba(255,255,255,0.7)" stroke-width="3" fill="none" stroke-linecap="round"/>
-
-        <!-- Leaf pattern left -->
-        <path d="M52 95 L58 88 M55 97 L63 91 M50 100 L57 95" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" stroke-linecap="round"/>
-        <!-- Leaf pattern right -->
-        <path d="M142 95 L148 88 M145 97 L153 91 M140 100 L147 95" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" stroke-linecap="round"/>
-        <!-- Center leaf -->
-        <path d="M94 90 L100 83 M97 92 L105 86 M92 95 L99 90" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" stroke-linecap="round"/>
-
-        <!-- White stripe pattern 2 (middle) -->
-        <path d="M28 112 Q100 100 172 112" stroke="rgba(255,255,255,0.7)" stroke-width="3" fill="none" stroke-linecap="round"/>
-
-        <!-- Wavy lines -->
-        <path d="M32 122 Q50 117 68 122 Q86 127 104 122 Q122 117 140 122 Q158 127 170 122"
-              stroke="rgba(255,255,255,0.6)" stroke-width="2" fill="none" stroke-linecap="round"/>
-        <path d="M34 130 Q52 125 70 130 Q88 135 106 130 Q124 125 142 130 Q158 135 168 130"
-              stroke="rgba(255,255,255,0.5)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-
-        <!-- White stripe pattern 3 (lower) -->
-        <path d="M32 140 Q100 130 168 140" stroke="rgba(255,255,255,0.6)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-
-        <!-- Small dash patterns bottom -->
-        <path d="M48 148 L54 148 M62 150 L68 150 M76 151 L82 151" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" stroke-linecap="round"/>
-        <path d="M118 151 L124 151 M132 150 L138 150 M146 148 L152 148" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" stroke-linecap="round"/>
-
-        <!-- Pot flat bottom -->
-        <ellipse cx="100" cy="157" rx="55" ry="12" fill="#8B3510"/>
-
-        <!-- Bottom shadow -->
-        <ellipse cx="100" cy="165" rx="50" ry="6" fill="rgba(0,0,0,0.2)"/>
-    </svg>
-</div>
-
-            <!-- Glow under matka -->
             <div class="glow-ring"></div>
-
-            <!-- Label -->
             <div class="matka-label">Matka Champion</div>
 
         </div>
@@ -409,7 +340,7 @@
         </div>
 
         <h2 class="login-title">Log In</h2>
-        <p class="login-sub">Enter your email and password to login to your dashboard.</p>
+        <p class="login-sub">Enter your phone number and password to login to your dashboard.</p>
 
         @if(session('error'))
             <div class="alert-error">{{ session('error') }}</div>
@@ -418,9 +349,9 @@
         <form action="{{ route('login') }}" method="POST">
             @csrf
             <div class="form-group">
-                <label>Email</label>
+                <label>Phone Number / Username</label>
                 <div class="input-wrap">
-                    <input type="email" name="email" placeholder="info@example.com"
+                    <input type="text" name="email" placeholder="Phone Number/Username"
                            value="{{ old('email') }}" required>
                 </div>
                 @error('email')<span style="color:#c62828;font-size:12px">{{ $message }}</span>@enderror
