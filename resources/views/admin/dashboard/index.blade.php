@@ -24,31 +24,31 @@
         </div>
     </div>
     <div class="stat-card success">
-        <div class="stat-icon">🎰</div>
+        <div class="stat-icon">🎯</div>
         <div class="stat-info">
-            <span class="stat-number">{{ $stats['active_lotteries'] }}</span>
-            <span class="stat-label">Active Lotteries</span>
+            <span class="stat-number">{{ $stats['pending_bets'] }}</span>
+            <span class="stat-label">Pending Bets</span>
         </div>
     </div>
     <div class="stat-card info">
         <div class="stat-icon">🎟️</div>
         <div class="stat-info">
-            <span class="stat-number">{{ $stats['total_tickets_sold'] }}</span>
-            <span class="stat-label">Tickets Sold</span>
+            <span class="stat-number">{{ $stats['total_bets'] }}</span>
+            <span class="stat-label">Total Bets</span>
         </div>
     </div>
     <div class="stat-card revenue">
         <div class="stat-icon">💰</div>
         <div class="stat-info">
-            <span class="stat-number">Rs. {{ number_format($stats['total_revenue'], 0) }}</span>
-            <span class="stat-label">Total Revenue</span>
+            <span class="stat-number">Rs. {{ number_format($stats['total_bet_amount'], 0) }}</span>
+            <span class="stat-label">Total Bet Amount</span>
         </div>
     </div>
 </div>
 
 {{-- LIVE BETS MONITOR --}}
 <div class="card" style="margin-top:24px">
-    <div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
+    <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
         <div style="display:flex;align-items:center;gap:10px">
             <h3 style="margin:0">🎯 Live Bets Monitor</h3>
             <span style="display:flex;align-items:center;gap:5px;background:rgba(255,59,59,0.15);border:1px solid rgba(255,59,59,0.3);padding:3px 10px;border-radius:20px;font-size:11px;color:#ff3b3b;font-weight:700">
@@ -56,7 +56,22 @@
                 LIVE
             </span>
         </div>
-        <button onclick="refreshBets()" class="btn-sm">🔄 Refresh</button>
+        <div style="display:flex;align-items:center;gap:8px">
+            <select id="filterStatus" onchange="filterBets()" class="form-input" style="padding:6px 10px;font-size:12px;width:auto">
+                <option value="">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="won">Won</option>
+                <option value="lost">Lost</option>
+            </select>
+            <select id="filterType" onchange="filterBets()" class="form-input" style="padding:6px 10px;font-size:12px;width:auto">
+                <option value="">All Types</option>
+                <option value="1x7">1x7</option>
+                <option value="1x70">1x70</option>
+                <option value="1x700">1x700</option>
+                <option value="1x7000">1x7000</option>
+            </select>
+            <button onclick="refreshBets()" class="btn-sm">🔄 Refresh</button>
+        </div>
     </div>
 
     <div id="betsTableWrap" class="table-wrap">
@@ -75,7 +90,7 @@
             </thead>
             <tbody id="betsTableBody">
                 @forelse($recentBets as $i => $bet)
-                <tr>
+                <tr data-status="{{ $bet->status }}" data-type="{{ $bet->bet_type }}">
                     <td style="color:var(--text2);font-size:12px">{{ $i + 1 }}</td>
                     <td>
                         <div style="display:flex;align-items:center;gap:8px">
@@ -87,7 +102,7 @@
                     </td>
                     <td>
                         <span style="font-family:'Rajdhani',sans-serif;font-size:1.8rem;font-weight:700;color:var(--teal)">
-                            {{ str_pad($bet->bet_number, 2, '0', STR_PAD_LEFT) }}
+                            {{ $bet->bet_number }}
                         </span>
                     </td>
                     <td>
@@ -113,56 +128,29 @@
 </div>
 
 {{-- PAYMENTS --}}
-<div class="two-col" style="margin-top:24px">
-    <div class="card">
-        <div class="card-header">
-            <h3>Recent Payment Requests</h3>
-            <a href="{{ route('admin.payments.index') }}" class="btn-sm">View All</a>
-        </div>
-        <div class="table-wrap">
-            <table>
-                <thead>
-                    <tr><th>User</th><th>Amount</th><th>Status</th><th>Action</th></tr>
-                </thead>
-                <tbody>
-                    @forelse($recentPayments as $p)
-                    <tr>
-                        <td>{{ $p->user->name }}</td>
-                        <td>Rs. {{ number_format($p->amount, 0) }}</td>
-                        <td><span class="badge {{ $p->status }}">{{ ucfirst($p->status) }}</span></td>
-                        <td><a href="{{ route('admin.payments.show', $p) }}" class="btn-xs">Review</a></td>
-                    </tr>
-                    @empty
-                    <tr><td colspan="4" style="text-align:center;color:var(--text2)">No payments yet</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+<div class="card" style="margin-top:24px">
+    <div class="card-header">
+        <h3>Recent Payment Requests</h3>
+        <a href="{{ route('admin.payments.index') }}" class="btn-sm">View All</a>
     </div>
-
-    <div class="card">
-        <div class="card-header">
-            <h3>Recent Ticket Purchases</h3>
-        </div>
-        <div class="table-wrap">
-            <table>
-                <thead>
-                    <tr><th>User</th><th>Lottery</th><th>Ticket #</th><th>Status</th></tr>
-                </thead>
-                <tbody>
-                    @forelse($recentTickets as $t)
-                    <tr>
-                        <td>{{ $t->user->name }}</td>
-                        <td>{{ $t->lotteryPackage->name }}</td>
-                        <td class="mono">{{ $t->ticket_number }}</td>
-                        <td><span class="badge {{ $t->status }}">{{ ucfirst($t->status) }}</span></td>
-                    </tr>
-                    @empty
-                    <tr><td colspan="4" style="text-align:center;color:var(--text2)">No tickets yet</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>User</th><th>Amount</th><th>Status</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+                @forelse($recentPayments as $p)
+                <tr>
+                    <td>{{ $p->user->name }}</td>
+                    <td>Rs. {{ number_format($p->amount, 0) }}</td>
+                    <td><span class="badge {{ $p->status }}">{{ ucfirst($p->status) }}</span></td>
+                    <td><a href="{{ route('admin.payments.show', $p) }}" class="btn-xs">Review</a></td>
+                </tr>
+                @empty
+                <tr><td colspan="4" style="text-align:center;color:var(--text2)">No payments yet</td></tr>
+                @endforelse
+            </tbody>
+        </table>
     </div>
 </div>
 
@@ -178,7 +166,18 @@ function refreshBets() {
     location.reload();
 }
 
-// Auto refresh har 30 second mein
+function filterBets() {
+    const status = document.getElementById('filterStatus').value;
+    const type   = document.getElementById('filterType').value;
+    const rows   = document.querySelectorAll('#betsTableBody tr[data-status]');
+
+    rows.forEach(row => {
+        const matchStatus = !status || row.dataset.status === status;
+        const matchType   = !type || row.dataset.type === type;
+        row.style.display = (matchStatus && matchType) ? '' : 'none';
+    });
+}
+
 setTimeout(() => location.reload(), 30000);
 </script>
 

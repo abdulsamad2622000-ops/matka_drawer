@@ -65,8 +65,10 @@ Route::prefix('user')->name('user.')->middleware(['auth', 'verified.user'])->gro
 
     Route::get('/wallet',          [UserWallet::class, 'index'])->name('wallet.index');
     Route::post('/wallet/deposit', [UserWallet::class, 'requestDeposit'])->name('wallet.deposit');
-    Route::post('/wallet/withdraw', [App\Http\Controllers\User\WithdrawalController::class, 'store'])->name('wallet.withdraw');
     Route::post('/change-password', [UserWallet::class, 'changePassword'])->name('wallet.change-password');
+
+    Route::get('/withdrawal',  [App\Http\Controllers\User\WithdrawalController::class, 'index'])->name('withdrawal.index');
+    Route::post('/withdrawal', [App\Http\Controllers\User\WithdrawalController::class, 'store'])->name('withdrawal.store');
 
     Route::get('/referrals', [App\Http\Controllers\User\ReferralController::class, 'index'])->name('referrals.index');
 
@@ -89,6 +91,9 @@ Route::prefix('user')->name('user.')->middleware(['auth', 'verified.user'])->gro
     Route::post('/support',                [App\Http\Controllers\User\SupportController::class, 'store'])->name('support.store');
     Route::get('/support/{ticket}',        [App\Http\Controllers\User\SupportController::class, 'show'])->name('support.show');
     Route::post('/support/{ticket}/reply', [App\Http\Controllers\User\SupportController::class, 'reply'])->name('support.reply');
+
+    Route::get('/feedback',  [App\Http\Controllers\User\FeedbackController::class, 'index'])->name('feedback.index');
+    Route::post('/feedback', [App\Http\Controllers\User\FeedbackController::class, 'store'])->name('feedback.store');
 });
 
 // ── Root Redirect ─────────────────────────────────────────────

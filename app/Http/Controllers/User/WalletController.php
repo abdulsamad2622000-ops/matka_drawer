@@ -34,11 +34,11 @@ public function changePassword(Request $request)
 }
     public function requestDeposit(Request $request)
     {
-        $request->validate([
-            'amount'                => 'required|numeric|min:100|max:100000',
-            'transaction_reference' => 'nullable|string|max:100',
-            'screenshot'            => 'required|image|mimes:jpg,jpeg,png|max:5120',
-        ]);
+      $request->validate([
+    'amount'                => 'required|numeric|min:1',
+    'transaction_reference' => 'nullable|string|max:100',
+    'screenshot'            => 'required|image|mimes:jpg,jpeg,png|max:5120',
+]);
 
         $screenshotPath = $request->file('screenshot')->store('payment-screenshots', 'public');
 

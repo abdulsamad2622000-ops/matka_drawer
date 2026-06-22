@@ -94,15 +94,9 @@
             <div class="form-group">
                 <label>Amount (Rs.) *</label>
                 <input type="number" name="amount" class="form-input"
-                       placeholder="e.g. 1000" min="100" max="100000"
+                       placeholder="e.g. 1000" min="1"
                        required value="{{ old('amount') }}">
                 @error('amount')<span class="error">{{ $message }}</span>@enderror
-            </div>
-            <div class="form-group">
-                <label>Transaction Reference <span class="hint">(optional)</span></label>
-                <input type="text" name="transaction_reference" class="form-input"
-                       placeholder="e.g. TXN-XXXXXXXXXX"
-                       value="{{ old('transaction_reference') }}">
             </div>
             <div class="form-group">
                 <label>Payment Screenshot *</label>
@@ -164,193 +158,6 @@
     </div>
 </div>
 
-{{-- WITHDRAWAL SECTION --}}
-<div style="margin-top:24px">
-    <div class="card">
-        <div class="card-header">
-            <h3>💸 Withdraw Funds</h3>
-            <span style="font-size:12px;color:var(--text2)">
-                Min: <strong>Rs. {{ number_format(\App\Models\Setting::get('min_withdrawal', 500), 0) }}</strong>
-                &nbsp;|&nbsp;
-                Max: <strong>Rs. {{ number_format(\App\Models\Setting::get('max_withdrawal', 50000), 0) }}</strong>
-            </span>
-        </div>
-
-        @php
-            $pendingWithdrawal = auth()->user()->withdrawalRequests()->where('status','pending')->first();
-        @endphp
-        @if($pendingWithdrawal)
-        <div style="margin:16px 20px;background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.4);border-radius:10px;padding:14px 18px">
-            ⏳ You have a <strong>pending withdrawal</strong> of
-            <strong style="color:var(--teal)">Rs. {{ number_format($pendingWithdrawal->amount, 0) }}</strong>
-            via <strong>{{ strtoupper($pendingWithdrawal->method) }}</strong>.
-            Admin will process it soon.
-        </div>
-        @else
-        <div style="padding:20px">
-            <form action="{{ route('user.wallet.withdraw') }}" method="POST" id="withdrawForm">
-                @csrf
-                <div class="form-group">
-                    <label>Withdrawal Method *</label>
-                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px">
-                        <label style="cursor:pointer">
-                            <input type="radio" name="method" value="bank"
-                                   onchange="showFields('bank')"
-                                   {{ old('method') === 'bank' ? 'checked' : '' }}
-                                   style="display:none" id="method_bank">
-                            <div class="method-card" id="card_bank"
-                                 style="border:2px solid var(--border);border-radius:10px;padding:14px;text-align:center;transition:all .2s">
-                                <div style="font-size:24px">🏦</div>
-                                <div style="font-size:13px;font-weight:600;margin-top:4px">Bank Transfer</div>
-                            </div>
-                        </label>
-                        <label style="cursor:pointer">
-                            <input type="radio" name="method" value="jazzcash"
-                                   onchange="showFields('jazzcash')"
-                                   {{ old('method') === 'jazzcash' ? 'checked' : '' }}
-                                   style="display:none" id="method_jazzcash">
-                            <div class="method-card" id="card_jazzcash"
-                                 style="border:2px solid var(--border);border-radius:10px;padding:14px;text-align:center;transition:all .2s">
-                                <div style="font-size:24px">📱</div>
-                                <div style="font-size:13px;font-weight:600;margin-top:4px">JazzCash</div>
-                            </div>
-                        </label>
-                        <label style="cursor:pointer">
-                            <input type="radio" name="method" value="easypaisa"
-                                   onchange="showFields('easypaisa')"
-                                   {{ old('method') === 'easypaisa' ? 'checked' : '' }}
-                                   style="display:none" id="method_easypaisa">
-                            <div class="method-card" id="card_easypaisa"
-                                 style="border:2px solid var(--border);border-radius:10px;padding:14px;text-align:center;transition:all .2s">
-                                <div style="font-size:24px">💚</div>
-                                <div style="font-size:13px;font-weight:600;margin-top:4px">EasyPaisa</div>
-                            </div>
-                        </label>
-                    </div>
-                    @error('method')<span class="error">{{ $message }}</span>@enderror
-                </div>
-
-                <div class="form-group">
-                    <label>Amount (Rs.) *</label>
-                    <input type="number" name="amount" class="form-input"
-                           placeholder="Enter amount"
-                           min="{{ \App\Models\Setting::get('min_withdrawal', 500) }}"
-                           max="{{ min(\App\Models\Setting::get('max_withdrawal', 50000), auth()->user()->wallet_balance) }}"
-                           value="{{ old('amount') }}">
-                    @error('amount')<span class="error">{{ $message }}</span>@enderror
-                </div>
-
-                <div id="fields_bank" style="display:none">
-                    <div class="form-group">
-                        <label>Bank Name *</label>
-                        <input type="text" name="bank_name" class="form-input"
-                               placeholder="e.g. HBL, MCB, UBL" value="{{ old('bank_name') }}">
-                        @error('bank_name')<span class="error">{{ $message }}</span>@enderror
-                    </div>
-                    <div class="form-group">
-                        <label>Account Title *</label>
-                        <input type="text" name="account_title" class="form-input"
-                               placeholder="Account holder name" value="{{ old('account_title') }}">
-                        @error('account_title')<span class="error">{{ $message }}</span>@enderror
-                    </div>
-                    <div class="form-group">
-                        <label>Account Number *</label>
-                        <input type="text" name="account_number" class="form-input"
-                               placeholder="e.g. 1234567890123456" value="{{ old('account_number') }}">
-                        @error('account_number')<span class="error">{{ $message }}</span>@enderror
-                    </div>
-                </div>
-
-                <div id="fields_mobile" style="display:none">
-                    <div class="form-group">
-                        <label>Account Holder Name *</label>
-                        <input type="text" name="account_holder" class="form-input"
-                               placeholder="Full name" value="{{ old('account_holder') }}">
-                        @error('account_holder')<span class="error">{{ $message }}</span>@enderror
-                    </div>
-                    <div class="form-group">
-                        <label>Mobile Number *</label>
-                        <input type="text" name="mobile_number" class="form-input"
-                               placeholder="03XXXXXXXXX" value="{{ old('mobile_number') }}">
-                        @error('mobile_number')<span class="error">{{ $message }}</span>@enderror
-                    </div>
-                </div>
-
-                <button type="submit" class="btn-primary full-width" style="margin-top:8px">
-                    💸 Submit Withdrawal Request
-                </button>
-            </form>
-        </div>
-        @endif
-
-        @php $withdrawals = auth()->user()->withdrawalRequests()->latest()->take(5)->get(); @endphp
-        @if($withdrawals->isNotEmpty())
-        <div style="padding:0 20px 20px">
-            <h4 style="margin-bottom:12px">Recent Withdrawal Requests</h4>
-            <div class="table-wrap">
-                <table>
-                    <thead>
-                        <tr><th>Amount</th><th>Method</th><th>Status</th><th>Date</th></tr>
-                    </thead>
-                    <tbody>
-                        @foreach($withdrawals as $w)
-                        <tr>
-                            <td style="font-weight:700">Rs. {{ number_format($w->amount, 0) }}</td>
-                            <td>{{ strtoupper($w->method) }}</td>
-                            <td><span class="badge {{ $w->status }}">{{ ucfirst($w->status) }}</span></td>
-                            <td>{{ $w->created_at->format('d M Y') }}</td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        @endif
-    </div>
-</div>
-
-<script>
-const ssFile     = document.getElementById('screenshotFile');
-const ssName     = document.getElementById('ssName');
-const preview    = document.getElementById('imagePreview');
-const previewImg = document.getElementById('previewImg');
-
-ssFile.addEventListener('change', () => {
-    if (ssFile.files.length) {
-        ssName.textContent = ssFile.files[0].name;
-        const reader = new FileReader();
-        reader.onload = e => {
-            previewImg.src = e.target.result;
-            preview.style.display = 'block';
-        };
-        reader.readAsDataURL(ssFile.files[0]);
-    }
-});
-
-function copyText(text) {
-    navigator.clipboard.writeText(text);
-    alert('✅ Account number copied!');
-}
-
-function showFields(method) {
-    ['bank','jazzcash','easypaisa'].forEach(m => {
-        document.getElementById('card_' + m).style.border = '2px solid var(--border)';
-        document.getElementById('card_' + m).style.background = 'transparent';
-    });
-    document.getElementById('card_' + method).style.border = '2px solid var(--teal)';
-    document.getElementById('card_' + method).style.background = 'rgba(0,184,148,0.08)';
-    document.getElementById('fields_bank').style.display   = method === 'bank' ? 'block' : 'none';
-    document.getElementById('fields_mobile').style.display = (method === 'jazzcash' || method === 'easypaisa') ? 'block' : 'none';
-}
-
-@if(old('method'))
-    showFields('{{ old('method') }}');
-    document.getElementById('method_{{ old('method') }}').checked = true;
-@endif
-</script>
-
-
-
 {{-- CHANGE PASSWORD --}}
 <div style="margin-top:24px">
     <div class="card">
@@ -403,4 +210,29 @@ function showFields(method) {
         </div>
     </div>
 </div>
+
+<script>
+const ssFile     = document.getElementById('screenshotFile');
+const ssName     = document.getElementById('ssName');
+const preview    = document.getElementById('imagePreview');
+const previewImg = document.getElementById('previewImg');
+
+ssFile.addEventListener('change', () => {
+    if (ssFile.files.length) {
+        ssName.textContent = ssFile.files[0].name;
+        const reader = new FileReader();
+        reader.onload = e => {
+            previewImg.src = e.target.result;
+            preview.style.display = 'block';
+        };
+        reader.readAsDataURL(ssFile.files[0]);
+    }
+});
+
+function copyText(text) {
+    navigator.clipboard.writeText(text);
+    alert('✅ Account number copied!');
+}
+</script>
+
 @endsection

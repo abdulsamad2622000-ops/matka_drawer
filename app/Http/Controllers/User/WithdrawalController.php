@@ -4,20 +4,25 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\WithdrawalRequest;
-use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class WithdrawalController extends Controller
 {
-    public function store(Request $request)
+    public function index()
     {
         $user        = Auth::user();
-        $minWithdraw = (float) Setting::get('min_withdrawal', 500);
-        $maxWithdraw = (float) Setting::get('max_withdrawal', 50000);
+        $withdrawals = $user->withdrawalRequests()->latest()->take(10)->get();
+
+        return view('user.withdrawal.index', compact('withdrawals'));
+    }
+
+    public function store(Request $request)
+    {
+        $user = Auth::user();
 
         $request->validate([
-            'amount'         => "required|numeric|min:{$minWithdraw}|max:{$maxWithdraw}",
+            'amount'         => 'required|numeric|min:1',
             'method'         => 'required|in:bank,jazzcash,easypaisa',
             'bank_name'      => 'required_if:method,bank|nullable|string|max:100',
             'account_title'  => 'required_if:method,bank|nullable|string|max:100',
@@ -26,7 +31,6 @@ class WithdrawalController extends Controller
             'account_holder' => 'required_if:method,jazzcash,easypaisa|nullable|string|max:100',
         ]);
 
-        // Withdrawable balance = total - referral bonus
         $withdrawableBalance = $user->wallet_balance - $user->referral_bonus_balance;
 
         if ($withdrawableBalance < $request->amount) {
@@ -36,26 +40,20 @@ class WithdrawalController extends Controller
             ]);
         }
 
-        // Pending request check
-        $hasPending = WithdrawalRequest::where('user_id', $user->id)
-            ->where('status', 'pending')
-            ->exists();
+        // 2% fee calculate karo
+        $fee            = round($request->amount * 0.02, 2);
+        $amountAfterFee = round($request->amount - $fee, 2);
 
-        if ($hasPending) {
-            return back()->withErrors(['amount' => 'You already have a pending withdrawal request.']);
-        }
-
-        // Deduct from wallet
+        // Wallet se pura amount deduct karo
         $user->debitWallet(
             $request->amount,
             'withdrawal',
-            'Withdrawal request — ' . strtoupper($request->method)
+            'Withdrawal — ' . strtoupper($request->method) . ' | 2% fee: Rs. ' . number_format($fee, 0)
         );
 
-        // Create request
         WithdrawalRequest::create([
             'user_id'        => $user->id,
-            'amount'         => $request->amount,
+            'amount'         => $amountAfterFee,
             'method'         => $request->method,
             'status'         => 'pending',
             'bank_name'      => $request->bank_name,
@@ -65,6 +63,7 @@ class WithdrawalController extends Controller
             'account_holder' => $request->account_holder,
         ]);
 
-        return back()->with('success', '✅ Withdrawal request submitted! Admin will process it soon.');
+        return redirect()->route('user.withdrawal.index')
+            ->with('success', '✅ Request submitted! Rs. ' . number_format($fee, 0) . ' fee deducted. You will receive Rs. ' . number_format($amountAfterFee, 0) . '.');
     }
 }

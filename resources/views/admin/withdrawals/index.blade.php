@@ -61,6 +61,7 @@
                         <span style="font-size:1.2rem;font-weight:700;color:var(--teal)">
                             Rs. {{ number_format($w->amount, 0) }}
                         </span>
+                        <div style="font-size:11px;color:var(--text2)">After 2% fee</div>
                     </td>
                     <td>
                         <span style="background:rgba(0,184,148,0.1);border:1px solid rgba(0,184,148,0.3);padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700">
@@ -69,16 +70,16 @@
                     </td>
                     <td>
                         @if($w->method === 'bank')
-                            <div style="font-size:12px">
-                                <div><strong>Bank:</strong> {{ $w->bank_name }}</div>
-                                <div><strong>Title:</strong> {{ $w->account_title }}</div>
-                                <div><strong>Account:</strong> <span class="mono">{{ $w->account_number }}</span></div>
-                            </div>
+                        <div style="font-size:12px">
+                            <div><strong>Bank:</strong> {{ $w->bank_name }}</div>
+                            <div><strong>Title:</strong> {{ $w->account_title }}</div>
+                            <div><strong>Account:</strong> <span class="mono">{{ $w->account_number }}</span></div>
+                        </div>
                         @else
-                            <div style="font-size:12px">
-                                <div><strong>Name:</strong> {{ $w->account_holder }}</div>
-                                <div><strong>Mobile:</strong> <span class="mono">{{ $w->mobile_number }}</span></div>
-                            </div>
+                        <div style="font-size:12px">
+                            <div><strong>Name:</strong> {{ $w->account_holder }}</div>
+                            <div><strong>Mobile:</strong> <span class="mono">{{ $w->mobile_number }}</span></div>
+                        </div>
                         @endif
                     </td>
                     <td style="color:var(--text2);font-size:12px">
@@ -87,7 +88,6 @@
                     </td>
                     <td>
                         <div style="display:flex;flex-direction:column;gap:6px">
-                            {{-- Approve --}}
                             <form action="{{ route('admin.withdrawals.approve', $w) }}" method="POST">
                                 @csrf
                                 <button type="submit" class="btn-xs"
@@ -96,8 +96,6 @@
                                     ✅ Approve
                                 </button>
                             </form>
-
-                            {{-- Reject --}}
                             <form action="{{ route('admin.withdrawals.reject', $w) }}" method="POST"
                                   id="rejectForm{{ $w->id }}">
                                 @csrf
