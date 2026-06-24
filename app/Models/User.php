@@ -12,16 +12,16 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     protected $fillable = [
-         'name', 'email', 'phone', 'password', 'role', 'wallet_balance', 'is_active',
-    'referral_code', 'referred_by', 'referral_bonus', 'referral_bonus_balance'
+        'name', 'email', 'phone', 'password', 'role', 'wallet_balance', 'is_active',
+        'referral_code', 'referred_by', 'referral_bonus', 'referral_bonus_balance'
     ];
 
     protected $hidden = ['password', 'remember_token'];
 
     protected $casts = [
-         'wallet_balance'         => 'decimal:2',
-    'referral_bonus_balance' => 'decimal:2',
-    'is_active'              => 'boolean',
+        'wallet_balance'         => 'decimal:2',
+        'referral_bonus_balance' => 'decimal:2',
+        'is_active'              => 'boolean',
     ];
 
     // ─── Roles ───────────────────────────────────────────
@@ -61,17 +61,15 @@ class User extends Authenticatable
         return $this->belongsTo(User::class, 'referred_by');
     }
 
+    public function withdrawalRequests()
+    {
+        return $this->hasMany(WithdrawalRequest::class);
+    }
 
-
-
-// ✅ Yeh add karo
-public function withdrawalRequests()
-{
-    return $this->hasMany(WithdrawalRequest::class);
-}
-
-
-
+    public function supportTickets()
+    {
+        return $this->hasMany(SupportTicket::class);
+    }
 
     // ─── Wallet Methods ──────────────────────────────────
     public function creditWallet(float $amount, string $purpose, string $desc = ''): void
@@ -87,12 +85,6 @@ public function withdrawalRequests()
             ]);
         });
     }
-
-
-    public function supportTickets()
-{
-    return $this->hasMany(SupportTicket::class);
-}
 
     public function debitWallet(float $amount, string $purpose, string $desc = ''): bool
     {

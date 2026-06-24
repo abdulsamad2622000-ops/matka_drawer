@@ -73,6 +73,97 @@
             <span>L: 0</span>
         </div>
 
+
+
+        {{-- NOTIFICATION BELL --}}
+@php
+    $notifPayments    = \App\Models\PaymentRequest::where('status','pending')->count();
+    $notifWithdrawals = \App\Models\WithdrawalRequest::where('status','pending')->count();
+    $notifSupport     = \App\Models\SupportTicket::where('status','open')->count();
+    $notifPassReset   = \App\Models\PasswordResetRequest::where('status','pending')->count();
+
+    if(request()->routeIs('admin.payments*'))        $notifPayments    = 0;
+    if(request()->routeIs('admin.withdrawals*'))     $notifWithdrawals = 0;
+    if(request()->routeIs('admin.support*'))         $notifSupport     = 0;
+    if(request()->routeIs('admin.password-resets*')) $notifPassReset   = 0;
+
+    $totalNotif = $notifPayments + $notifWithdrawals + $notifSupport + $notifPassReset;
+@endphp
+<div style="position:relative">
+    <button onclick="toggleBell()" style="background:none;border:none;cursor:pointer;position:relative;font-size:20px;padding:4px">
+        🔔
+        @if($totalNotif > 0)
+        <span style="position:absolute;top:-4px;right:-6px;background:#ef4444;color:#fff;font-size:10px;font-weight:700;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center">
+            {{ $totalNotif }}
+        </span>
+        @endif
+    </button>
+
+    <div id="bellDrop" style="display:none;position:absolute;top:110%;right:0;min-width:280px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.3);z-index:9999;overflow:hidden">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-weight:700;font-size:14px">
+            🔔 Notifications
+            @if($totalNotif > 0)
+            <span style="background:#ef4444;color:#fff;font-size:10px;padding:2px 7px;border-radius:10px;margin-left:6px">{{ $totalNotif }}</span>
+            @endif
+        </div>
+
+        <div style="padding:8px">
+            @if($notifPayments > 0)
+            <a href="{{ route('admin.payments.index') }}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;text-decoration:none;color:var(--text);margin-bottom:4px;background:rgba(255,193,7,0.06);border:1px solid rgba(255,193,7,0.2)"
+               onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='rgba(255,193,7,0.06)'">
+                <span style="font-size:18px">💰</span>
+                <div style="flex:1">
+                    <div style="font-size:13px;font-weight:600">Pending Payments</div>
+                    <div style="font-size:11px;color:var(--text2)">{{ $notifPayments }} request(s) waiting</div>
+                </div>
+                <span style="background:#f59e0b;color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px">{{ $notifPayments }}</span>
+            </a>
+            @endif
+
+            @if($notifWithdrawals > 0)
+            <a href="{{ route('admin.withdrawals.index') }}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;text-decoration:none;color:var(--text);margin-bottom:4px;background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.2)"
+               onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='rgba(99,102,241,0.06)'">
+                <span style="font-size:18px">💸</span>
+                <div style="flex:1">
+                    <div style="font-size:13px;font-weight:600">Pending Withdrawals</div>
+                    <div style="font-size:11px;color:var(--text2)">{{ $notifWithdrawals }} request(s) waiting</div>
+                </div>
+                <span style="background:#6366f1;color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px">{{ $notifWithdrawals }}</span>
+            </a>
+            @endif
+
+            @if($notifSupport > 0)
+            <a href="{{ route('admin.support.index') }}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;text-decoration:none;color:var(--text);margin-bottom:4px;background:rgba(0,184,148,0.06);border:1px solid rgba(0,184,148,0.2)"
+               onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='rgba(0,184,148,0.06)'">
+                <span style="font-size:18px">🎧</span>
+                <div style="flex:1">
+                    <div style="font-size:13px;font-weight:600">Open Support Tickets</div>
+                    <div style="font-size:11px;color:var(--text2)">{{ $notifSupport }} ticket(s) open</div>
+                </div>
+                <span style="background:var(--teal);color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px">{{ $notifSupport }}</span>
+            </a>
+            @endif
+
+            @if($notifPassReset > 0)
+            <a href="{{ route('admin.password-resets.index') }}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;text-decoration:none;color:var(--text);background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2)"
+               onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='rgba(239,68,68,0.06)'">
+                <span style="font-size:18px">🔑</span>
+                <div style="flex:1">
+                    <div style="font-size:13px;font-weight:600">Password Reset Requests</div>
+                    <div style="font-size:11px;color:var(--text2)">{{ $notifPassReset }} request(s) pending</div>
+                </div>
+                <span style="background:#ef4444;color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px">{{ $notifPassReset }}</span>
+            </a>
+            @endif
+
+            @if($totalNotif === 0)
+            <div style="padding:20px;text-align:center;color:var(--text2);font-size:13px">
+                ✅ No pending notifications
+            </div>
+            @endif
+        </div>
+    </div>
+</div>
         {{-- Profile Dropdown --}}
         <div style="position:relative">
             <div class="navbar-user" onclick="toggleAdminDrop()" style="cursor:pointer">
@@ -164,8 +255,7 @@
             <a href="{{ route('admin.announcements.index') }}" class="nav-item {{ request()->routeIs('admin.announcements*') ? 'active' : '' }}">
                 <span class="icon">📢</span> Announcements
             </a>
-
-<a href="{{ route('admin.support.index') }}" class="nav-item {{ request()->routeIs('admin.support*') ? 'active' : '' }}">
+            <a href="{{ route('admin.support.index') }}" class="nav-item {{ request()->routeIs('admin.support*') ? 'active' : '' }}">
     <span class="icon">🎧</span> Support
     @php $openTickets = \App\Models\SupportTicket::where('status','open')->count(); @endphp
     @if($openTickets > 0)
@@ -174,12 +264,18 @@
     </span>
     @endif
 </a>
-
-
-
             <a href="{{ route('admin.settings.index') }}" class="nav-item {{ request()->routeIs('admin.settings*') ? 'active' : '' }}">
                 <span class="icon">⚙️</span> Settings
             </a>
+           <a href="{{ route('admin.password-resets.index') }}" class="nav-item {{ request()->routeIs('admin.password-resets*') ? 'active' : '' }}">
+    <span class="icon">🔑</span> Password Resets
+    @php $prCount = \App\Models\PasswordResetRequest::where('status','pending')->count(); @endphp
+    @if($prCount > 0)
+    <span style="margin-left:auto;background:#ef4444;color:#fff;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px">
+        {{ $prCount }}
+    </span>
+    @endif
+</a>
         </nav>
         <div class="sidebar-bottom">
             <div class="user-chip">
@@ -240,13 +336,27 @@
 
     function toggleAdminDrop() {
         const drop = document.getElementById('adminDrop');
+        const bell = document.getElementById('bellDrop');
+        bell.style.display = 'none';
         drop.style.display = drop.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function toggleBell() {
+        const bell = document.getElementById('bellDrop');
+        const drop = document.getElementById('adminDrop');
+        drop.style.display = 'none';
+        bell.style.display = bell.style.display === 'block' ? 'none' : 'block';
     }
 
     document.addEventListener('click', function(e) {
         const drop = document.getElementById('adminDrop');
+        const bell = document.getElementById('bellDrop');
+
         if(drop && !e.target.closest('.navbar-user') && !e.target.closest('#adminDrop')) {
             drop.style.display = 'none';
+        }
+        if(bell && !e.target.closest('#bellDrop') && !e.target.closest('button[onclick="toggleBell()"]')) {
+            bell.style.display = 'none';
         }
     });
 </script>

@@ -124,29 +124,34 @@
 
 {{-- STATS --}}
 <div class="stats-grid mini">
-    <div class="stat-card">
-        <div class="stat-icon">🎟️</div>
-        <div class="stat-info">
-            <span class="stat-number">{{ auth()->user()->lotteryTickets()->count() }}</span>
-            <span class="stat-label">Total Tickets</span>
+    <a href="{{ route('user.bets.index') }}" style="text-decoration:none">
+        <div class="stat-card" style="cursor:pointer">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-info">
+                <span class="stat-number">{{ auth()->user()->bets()->count() }}</span>
+                <span class="stat-label">Total Bets</span>
+            </div>
         </div>
-    </div>
-    <div class="stat-card success">
-        <div class="stat-icon">🏆</div>
-        <div class="stat-info">
-            <span class="stat-number">{{ auth()->user()->lotteryTickets()->where('status','won')->count() }}</span>
-            <span class="stat-label">Tickets Won</span>
+    </a>
+    <a href="{{ route('user.bets.index') }}" style="text-decoration:none">
+        <div class="stat-card success" style="cursor:pointer">
+            <div class="stat-icon">🏆</div>
+            <div class="stat-info">
+                <span class="stat-number">{{ auth()->user()->bets()->where('status','won')->count() }}</span>
+                <span class="stat-label">Bets Won</span>
+            </div>
         </div>
-    </div>
-    <div class="stat-card primary">
-        <div class="stat-icon">⚡</div>
-        <div class="stat-info">
-            <span class="stat-number">{{ auth()->user()->lotteryTickets()->where('status','active')->count() }}</span>
-            <span class="stat-label">Active Tickets</span>
+    </a>
+    <a href="{{ route('user.wallet.index') }}" style="text-decoration:none">
+        <div class="stat-card primary" style="cursor:pointer">
+            <div class="stat-icon">💳</div>
+            <div class="stat-info">
+                <span class="stat-number">Rs. {{ number_format(auth()->user()->wallet_balance, 0) }}</span>
+                <span class="stat-label">Wallet Balance</span>
+            </div>
         </div>
-    </div>
+    </a>
 </div>
-
 
 
 {{-- PLACE BET SECTION --}}

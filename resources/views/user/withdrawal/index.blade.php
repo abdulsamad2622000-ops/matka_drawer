@@ -21,6 +21,17 @@
             <h3>💸 New Withdrawal Request</h3>
         </div>
         <div style="padding:20px">
+            {{-- 2% FEE NOTICE --}}
+<div style="background:rgba(255,193,7,0.08);border:1px solid rgba(255,193,7,0.3);border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px">
+    <span style="font-size:20px">ℹ️</span>
+    <div>
+        <div style="font-size:13px;font-weight:700;color:#f59e0b">2% Service Fee Applied</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:2px">
+            A 2% service fee is deducted from your withdrawal amount. 
+            Enter amount below to see exact calculation.
+        </div>
+    </div>
+</div>
             <form action="{{ route('user.withdrawal.store') }}" method="POST">
                 @csrf
 

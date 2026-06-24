@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
+use App\Models\PasswordResetRequest;
 use Illuminate\Http\Request;
 
 class SettingController extends Controller
@@ -25,25 +26,6 @@ class SettingController extends Controller
 
         return view('admin.settings.index', compact('settings'));
     }
-
-
-    public function changePassword(Request $request)
-{
-    $request->validate([
-        'current_password' => 'required',
-        'new_password'     => 'required|string|min:6|confirmed',
-    ]);
-
-    $admin = auth()->user();
-
-    if (!\Hash::check($request->current_password, $admin->password)) {
-        return back()->withErrors(['current_password' => 'Current password is incorrect.']);
-    }
-
-    $admin->update(['password' => \Hash::make($request->new_password)]);
-
-    return back()->with('success', '✅ Password changed successfully!');
-}
 
     public function update(Request $request)
     {
@@ -72,5 +54,37 @@ class SettingController extends Controller
         Setting::set('payment_instructions',   $request->payment_instructions);
 
         return back()->with('success', '✅ Settings saved successfully!');
+    }
+
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'new_password'     => 'required|string|min:6|confirmed',
+        ]);
+
+        $admin = auth()->user();
+
+        if (!\Hash::check($request->current_password, $admin->password)) {
+            return back()->withErrors(['current_password' => 'Current password is incorrect.']);
+        }
+
+        $admin->update(['password' => \Hash::make($request->new_password)]);
+
+        return back()->with('success', '✅ Password changed successfully!');
+    }
+
+    public function passwordResets()
+    {
+        $resets       = PasswordResetRequest::with('user')->latest()->paginate(20);
+        $pendingCount = PasswordResetRequest::where('status', 'pending')->count();
+
+        return view('admin.password-resets.index', compact('resets', 'pendingCount'));
+    }
+
+    public function resolvePasswordReset(PasswordResetRequest $reset)
+    {
+        $reset->update(['status' => 'resolved']);
+        return back()->with('success', '✅ Marked as resolved!');
     }
 }

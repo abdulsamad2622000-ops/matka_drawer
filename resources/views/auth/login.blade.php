@@ -372,8 +372,7 @@
 
         <div class="form-footer">
             Don't have an account? <a href="{{ route('register') }}">Sign Up</a>
-            <a href="#" class="forgot">Forget Password?</a>
-        </div>
+<a href="{{ route('password.request') }}" class="forgot">Forget Password?</a>     </div>
     </div>
 </div>
 

@@ -20,6 +20,9 @@ Route::middleware('guest')->group(function () {
     Route::post('/login',   [LoginController::class, 'login']);
     Route::get('/register', [RegisterController::class, 'showRegister'])->name('register');
     Route::post('/register',[RegisterController::class, 'register']);
+
+    Route::get('/forgot-password',  [App\Http\Controllers\Auth\ForgotPasswordController::class, 'show'])->name('password.request');
+    Route::post('/forgot-password', [App\Http\Controllers\Auth\ForgotPasswordController::class, 'store'])->name('password.request.store');
 });
 
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
@@ -31,6 +34,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::get('settings', [App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
     Route::put('settings', [App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
     Route::post('settings/change-password', [App\Http\Controllers\Admin\SettingController::class, 'changePassword'])->name('settings.change-password');
+
+    Route::get('/password-resets', [App\Http\Controllers\Admin\SettingController::class, 'passwordResets'])->name('password-resets.index');
+    Route::post('/password-resets/{reset}/resolve', [App\Http\Controllers\Admin\SettingController::class, 'resolvePasswordReset'])->name('settings.password-reset.resolve');
 
     Route::get('/payments',                    [AdminPayment::class, 'index'])->name('payments.index');
     Route::get('/payments/{payment}',          [AdminPayment::class, 'show'])->name('payments.show');
@@ -91,9 +97,6 @@ Route::prefix('user')->name('user.')->middleware(['auth', 'verified.user'])->gro
     Route::post('/support',                [App\Http\Controllers\User\SupportController::class, 'store'])->name('support.store');
     Route::get('/support/{ticket}',        [App\Http\Controllers\User\SupportController::class, 'show'])->name('support.show');
     Route::post('/support/{ticket}/reply', [App\Http\Controllers\User\SupportController::class, 'reply'])->name('support.reply');
-
-    Route::get('/feedback',  [App\Http\Controllers\User\FeedbackController::class, 'index'])->name('feedback.index');
-    Route::post('/feedback', [App\Http\Controllers\User\FeedbackController::class, 'store'])->name('feedback.store');
 });
 
 // ── Root Redirect ─────────────────────────────────────────────

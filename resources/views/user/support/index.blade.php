@@ -5,105 +5,84 @@
 @section('content')
 
 <div class="page-header">
-    <h1>🎧 Support</h1>
-    <span class="subtitle">Contact us — we'll reply as soon as possible</span>
+    <h1>🎧 Support Chat</h1>
+    <span class="subtitle">Send us a message — we'll reply soon</span>
 </div>
 
 @if(session('success'))
-<div class="alert success" style="margin-bottom:20px">{{ session('success') }}</div>
+<div class="alert success" style="margin-bottom:16px">{{ session('success') }}</div>
 @endif
 
-<div class="two-col" style="align-items:start">
+<div style="max-width:700px;margin:0 auto">
 
-    {{-- NEW TICKET FORM --}}
-    <div class="card">
+    {{-- CHAT MESSAGES --}}
+    @if($tickets->isNotEmpty())
+    @php $ticket = $tickets->first(); @endphp
+    <div class="card" style="margin-bottom:16px">
         <div class="card-header">
-            <h3>📩 New Message</h3>
+            <h3>💬 Chat</h3>
+            <span class="badge {{ $ticket->status }}">{{ ucfirst($ticket->status) }}</span>
         </div>
-        <div style="padding:20px">
-            <form action="{{ route('user.support.store') }}" method="POST">
+        <div style="padding:16px;display:flex;flex-direction:column;gap:12px;max-height:400px;overflow-y:auto" id="chatBox">
+            @foreach($ticket->messages()->with('user')->oldest()->get() as $msg)
+            <div style="display:flex;{{ $msg->is_admin ? 'justify-content:flex-start' : 'justify-content:flex-end' }}">
+                <div style="max-width:75%;background:{{ $msg->is_admin ? 'var(--bg3)' : 'var(--teal)' }};color:{{ $msg->is_admin ? 'var(--text)' : '#fff' }};padding:10px 14px;border-radius:{{ $msg->is_admin ? '4px 12px 12px 12px' : '12px 4px 12px 12px' }}">
+                    @if($msg->is_admin)
+                    <div style="font-size:11px;font-weight:700;color:var(--teal);margin-bottom:4px">Support Team</div>
+                    @endif
+                    <div style="font-size:14px">{{ $msg->message }}</div>
+                    <div style="font-size:10px;opacity:0.7;margin-top:4px;text-align:right">{{ $msg->created_at->format('d M h:i A') }}</div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+
+        @if($ticket->status !== 'closed')
+        <div style="padding:16px;border-top:1px solid var(--border)">
+            <form action="{{ route('user.support.reply', $ticket) }}" method="POST" style="display:flex;gap:8px">
                 @csrf
-
-                <div class="form-group">
-                    <label>Subject *</label>
-                    <input type="text" name="subject" class="form-input"
-                           placeholder="e.g. Payment issue, Withdrawal problem..."
-                           value="{{ old('subject') }}">
-                    @error('subject')<span class="error">{{ $message }}</span>@enderror
-                </div>
-
-                <div class="form-group">
-                    <label>Priority *</label>
-                    <select name="priority" class="form-input">
-                        <option value="low"    {{ old('priority') === 'low'    ? 'selected' : '' }}>🟢 Low</option>
-                        <option value="medium" {{ old('priority','medium') === 'medium' ? 'selected' : '' }}>🟡 Medium</option>
-                        <option value="high"   {{ old('priority') === 'high'   ? 'selected' : '' }}>🔴 High</option>
-                    </select>
-                    @error('priority')<span class="error">{{ $message }}</span>@enderror
-                </div>
-
-                <div class="form-group">
-                    <label>Message *</label>
-                    <textarea name="message" class="form-input" rows="5"
-                              placeholder="Describe your issue in detail..."
-                              style="resize:vertical">{{ old('message') }}</textarea>
-                    @error('message')<span class="error">{{ $message }}</span>@enderror
-                </div>
-
-                <button type="submit" class="btn-primary full-width">
-                    📤 Send Message
+                <input type="text" name="message" class="form-input"
+                       placeholder="Type your message..." required>
+                <button type="submit" class="btn-primary" style="white-space:nowrap;padding:10px 16px">
+                    Send 📤
                 </button>
             </form>
         </div>
-    </div>
-
-    {{-- MY TICKETS --}}
-    <div class="card">
-        <div class="card-header">
-            <h3>📋 My Tickets</h3>
-        </div>
-        @if($tickets->isEmpty())
-        <div class="empty-state">
-            <span>🎧</span>
-            <p>No support tickets yet.</p>
-        </div>
         @else
-        <div style="padding:12px;display:flex;flex-direction:column;gap:10px">
-            @foreach($tickets as $ticket)
-            <a href="{{ route('user.support.show', $ticket) }}"
-               style="display:block;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;text-decoration:none;color:var(--text);transition:border-color .2s"
-               onmouseover="this.style.borderColor='var(--teal)'" onmouseout="this.style.borderColor='var(--border)'">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-                    <span style="font-weight:700;font-size:14px">{{ $ticket->subject }}</span>
-                    <span class="badge {{ $ticket->status }}" style="font-size:11px">
-                        {{ ucfirst($ticket->status) }}
-                    </span>
-                </div>
-                <div style="display:flex;justify-content:space-between;align-items:center">
-                    <span style="font-size:12px;color:var(--text2)">
-                        {{ $ticket->created_at->format('d M Y h:i A') }}
-                    </span>
-                    @if($ticket->status === 'replied')
-                    <span style="font-size:11px;background:rgba(0,184,148,0.15);color:var(--teal);padding:2px 8px;border-radius:10px;font-weight:700">
-                        💬 New Reply
-                    </span>
-                    @endif
-                </div>
-                <div style="margin-top:6px;font-size:11px">
-                    @if($ticket->priority === 'high')
-                    <span style="color:#ef4444;font-weight:700">🔴 High Priority</span>
-                    @elseif($ticket->priority === 'medium')
-                    <span style="color:#f59e0b;font-weight:700">🟡 Medium Priority</span>
-                    @else
-                    <span style="color:#22c55e;font-weight:700">🟢 Low Priority</span>
-                    @endif
-                </div>
-            </a>
-            @endforeach
+        <div style="padding:16px;text-align:center;color:var(--text2);font-size:13px">
+            🔒 This chat is closed.
         </div>
         @endif
     </div>
+    @endif
+
+    {{-- NEW MESSAGE FORM --}}
+    @if($tickets->isEmpty())
+    <div class="card">
+        <div class="card-header"><h3>📩 Send Message</h3></div>
+        <div style="padding:20px">
+            <form action="{{ route('user.support.store') }}" method="POST">
+                @csrf
+                <input type="hidden" name="subject" value="Support Request">
+                <input type="hidden" name="priority" value="medium">
+                <div class="form-group">
+                    <label>Message *</label>
+                    <textarea name="message" class="form-input" rows="5"
+                              placeholder="How can we help you?"
+                              style="resize:vertical">{{ old('message') }}</textarea>
+                    @error('message')<span class="error">{{ $message }}</span>@enderror
+                </div>
+                <button type="submit" class="btn-primary full-width">📤 Send Message</button>
+            </form>
+        </div>
+    </div>
+    @endif
 
 </div>
+
+<script>
+const chatBox = document.getElementById('chatBox');
+if(chatBox) chatBox.scrollTop = chatBox.scrollHeight;
+</script>
 
 @endsection

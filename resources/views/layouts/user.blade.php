@@ -210,11 +210,10 @@
                     Rs. {{ number_format(auth()->user()->wallet_balance, 0) }}
                 </span>
             </a>
-
-
-            <a href="{{ route('user.withdrawal.index') }}" class="nav-item {{ request()->routeIs('user.withdrawal*') ? 'active' : '' }}">
+<a href="{{ route('user.withdrawal.index') }}" class="nav-item {{ request()->routeIs('user.withdrawal*') ? 'active' : '' }}">
     <span class="icon">💸</span> Withdraw
 </a>
+
             <a href="{{ route('user.referrals.index') }}" class="nav-item {{ request()->routeIs('user.referrals*') ? 'active' : '' }}">
                 <span class="icon">🔗</span> Referrals
                 @if(auth()->user()->referredUsers()->count() > 0)

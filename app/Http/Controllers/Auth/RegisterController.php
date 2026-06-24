@@ -22,22 +22,20 @@ class RegisterController extends Controller
 
     public function register(Request $request)
     {
- $request->validate([
-    'name'          => 'required|string|max:255',
-    'email'         => 'required|string|unique:users,email',
-    'phone'         => 'nullable|string|max:20',
-    'password'      => 'required|string|min:6|confirmed',
-    'referral_code' => 'nullable|string|exists:users,referral_code',
-], [
-    'email.unique' => 'This phone number is already registered. Please login instead.',
-]);
+        $request->validate([
+            'name'          => 'required|string|max:255',
+            'email'         => 'required|string|unique:users,email',
+            'user_email'    => 'required|email|max:255',
+            'password'      => 'required|string|min:6|confirmed',
+            'referral_code' => 'nullable|string|exists:users,referral_code',
+        ], [
+            'email.unique' => 'This phone number is already registered. Please login instead.',
+        ]);
 
-        // Generate unique referral code for new user
         do {
             $newReferralCode = strtoupper(Str::random(8));
         } while (User::where('referral_code', $newReferralCode)->exists());
 
-        // Find referrer
         $referrer = null;
         if ($request->filled('referral_code')) {
             $referrer = User::where('referral_code', $request->referral_code)->first();
@@ -48,25 +46,21 @@ class RegisterController extends Controller
             $user = User::create([
                 'name'          => $request->name,
                 'email'         => $request->email,
-                'phone'         => $request->phone,
+                'phone'         => $request->user_email,
                 'password'      => Hash::make($request->password),
                 'role'          => 'user',
                 'referral_code' => $newReferralCode,
                 'referred_by'   => $referrer?->id,
             ]);
 
-            // Credit bonus to referrer
             if ($referrer) {
                 $bonus = (float) Setting::get('referral_bonus', 100);
-               // Wallet credit karo
-$referrer->creditWallet(
-    $bonus,
-    'referral_bonus',
-    "Referral bonus — {$user->name} joined using your link"
-);
-
-// Referral bonus balance track karo
-$referrer->increment('referral_bonus_balance', $bonus);
+                $referrer->creditWallet(
+                    $bonus,
+                    'referral_bonus',
+                    "Referral bonus — {$user->name} joined using your link"
+                );
+                $referrer->increment('referral_bonus_balance', $bonus);
             }
 
             DB::commit();

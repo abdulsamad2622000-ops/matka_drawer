@@ -9,34 +9,42 @@
 
 {{-- STATS --}}
 <div class="stats-grid">
-    <div class="stat-card primary">
-        <div class="stat-icon">👥</div>
-        <div class="stat-info">
-            <span class="stat-number">{{ $stats['total_users'] }}</span>
-            <span class="stat-label">Total Users</span>
+    <a href="{{ route('admin.users.index') }}" style="text-decoration:none">
+        <div class="stat-card primary" style="cursor:pointer">
+            <div class="stat-icon">👥</div>
+            <div class="stat-info">
+                <span class="stat-number">{{ $stats['total_users'] }}</span>
+                <span class="stat-label">Total Users</span>
+            </div>
         </div>
-    </div>
-    <div class="stat-card warning">
-        <div class="stat-icon">⏳</div>
-        <div class="stat-info">
-            <span class="stat-number">{{ $stats['pending_payments'] }}</span>
-            <span class="stat-label">Pending Payments</span>
+    </a>
+    <a href="{{ route('admin.payments.index') }}" style="text-decoration:none">
+        <div class="stat-card warning" style="cursor:pointer">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-info">
+                <span class="stat-number">{{ $stats['pending_payments'] }}</span>
+                <span class="stat-label">Pending Payments</span>
+            </div>
         </div>
-    </div>
-    <div class="stat-card success">
-        <div class="stat-icon">🎯</div>
-        <div class="stat-info">
-            <span class="stat-number">{{ $stats['pending_bets'] }}</span>
-            <span class="stat-label">Pending Bets</span>
+    </a>
+    <a href="{{ route('admin.dashboard') }}?filter=pending" style="text-decoration:none">
+        <div class="stat-card success" style="cursor:pointer">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-info">
+                <span class="stat-number">{{ $stats['pending_bets'] }}</span>
+                <span class="stat-label">Pending Bets</span>
+            </div>
         </div>
-    </div>
-    <div class="stat-card info">
-        <div class="stat-icon">🎟️</div>
-        <div class="stat-info">
-            <span class="stat-number">{{ $stats['total_bets'] }}</span>
-            <span class="stat-label">Total Bets</span>
+    </a>
+    <a href="{{ route('admin.dashboard') }}?filter=all" style="text-decoration:none">
+        <div class="stat-card info" style="cursor:pointer">
+            <div class="stat-icon">🎟️</div>
+            <div class="stat-info">
+                <span class="stat-number">{{ $stats['total_bets'] }}</span>
+                <span class="stat-label">Total Bets</span>
+            </div>
         </div>
-    </div>
+    </a>
     <div class="stat-card revenue">
         <div class="stat-icon">💰</div>
         <div class="stat-info">
@@ -173,9 +181,17 @@ function filterBets() {
 
     rows.forEach(row => {
         const matchStatus = !status || row.dataset.status === status;
-        const matchType   = !type || row.dataset.type === type;
+        const matchType   = !type   || row.dataset.type   === type;
         row.style.display = (matchStatus && matchType) ? '' : 'none';
     });
+}
+
+// URL filter auto apply
+const urlParams = new URLSearchParams(window.location.search);
+const urlFilter = urlParams.get('filter');
+if (urlFilter === 'pending') {
+    document.getElementById('filterStatus').value = 'pending';
+    filterBets();
 }
 
 setTimeout(() => location.reload(), 30000);
