@@ -82,9 +82,16 @@ class SettingController extends Controller
         return view('admin.password-resets.index', compact('resets', 'pendingCount'));
     }
 
-    public function resolvePasswordReset(PasswordResetRequest $reset)
-    {
-        $reset->update(['status' => 'resolved']);
-        return back()->with('success', '✅ Marked as resolved!');
+  public function resolvePasswordReset(PasswordResetRequest $reset)
+{
+    // User ka password update karo generated password se
+    if ($reset->user_id && $reset->generated_password) {
+        \App\Models\User::where('id', $reset->user_id)
+            ->update(['password' => \Hash::make($reset->generated_password)]);
     }
+
+    $reset->update(['status' => 'resolved']);
+
+    return back()->with('success', '✅ Password reset aur resolved!');
+}
 }

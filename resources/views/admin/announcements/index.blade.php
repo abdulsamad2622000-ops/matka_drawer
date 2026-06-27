@@ -20,7 +20,6 @@
                     <th>Title</th>
                     <th>Winning Number</th>
                     <th>Next Draw</th>
-                    <th>Duration</th>
                     <th>Status</th>
                     <th>Date</th>
                     <th>Actions</th>
@@ -35,10 +34,8 @@
                         @if($a->description)
                         <div style="font-size:11px;color:var(--text2)">{{ $a->description }}</div>
                         @endif
-                        @if($a->scheduled_at)
-                        <div style="font-size:11px;color:var(--orange)">
-                            📅 Scheduled: {{ $a->scheduled_at->format('d M Y H:i') }}
-                        </div>
+                        @if($a->extra_message)
+                        <div style="font-size:11px;color:var(--teal)">💬 {{ Str::limit($a->extra_message, 40) }}</div>
                         @endif
                     </td>
                     <td>
@@ -58,7 +55,6 @@
                             <span style="color:var(--text2)">—</span>
                         @endif
                     </td>
-                    <td>{{ $a->video_display_seconds }}s</td>
                     <td>
                         @if($a->isScheduled())
                             <span class="badge warning">⏰ Scheduled</span>
@@ -91,6 +87,7 @@
                             </div>
                             @endif
 
+
                             {{-- Remove Winning Number --}}
                             @if($a->winning_number && $a->is_active)
                             <form action="{{ route('admin.announcements.remove-winning-number', $a) }}" method="POST">
@@ -103,14 +100,14 @@
                             </form>
                             @endif
 
-                            {{-- Deactivate --}}
+                            {{-- Clear Announcement --}}
                             @if($a->is_active)
                             <form action="{{ route('admin.announcements.destroy', $a) }}" method="POST">
                                 @csrf
                                 <button type="submit" class="btn-xs"
-                                    style="background:rgba(239,68,68,.15);color:var(--red)"
-                                    onclick="return confirm('Deactivate this announcement?')">
-                                    Deactivate
+                                    style="background:rgba(239,68,68,.15);color:#ef4444;font-weight:700"
+                                    onclick="return confirm('Clear this announcement completely?')">
+                                    🧹 Clear Announcement
                                 </button>
                             </form>
                             @endif
@@ -119,7 +116,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="8" style="text-align:center;color:var(--text2);padding:40px">
+                    <td colspan="7" style="text-align:center;color:var(--text2);padding:40px">
                         No announcements yet. <a href="{{ route('admin.announcements.create') }}">Create one!</a>
                     </td>
                 </tr>

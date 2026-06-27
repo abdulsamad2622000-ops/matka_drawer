@@ -140,9 +140,14 @@ html, body { overflow-x: hidden; max-width: 100%; }
                     <span id="tDisplayWin" style="color:var(--teal);font-family:'Rajdhani',sans-serif;font-size:1.2rem;font-weight:700">Rs. 0</span>
                 </div>
             </div>
-            <button type="button" onclick="submitTicketBet()" class="btn-primary full-width" style="font-size:1rem">
-                🎯 Place Bet
-            </button>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <button type="button" onclick="submitTicketBet()" class="btn-primary full-width" style="font-size:1rem">
+                    🎯 Place Bet
+                </button>
+                <button type="button" onclick="addToCart()" style="background:rgba(0,184,148,0.1);border:2px solid var(--teal);color:var(--teal);border-radius:10px;padding:12px;font-size:1rem;font-weight:700;cursor:pointer;width:100%">
+                    🛒 Add to Cart
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -250,6 +255,29 @@ function submitTicketBet() {
 document.getElementById('ticketModal').addEventListener('click', function(e) {
     if (e.target === this) closeTicketModal();
 });
+
+function addToCart() {
+    const amount = document.getElementById('ticketAmount').value;
+    if (selectedNumber === null) { alert('Please select a number!'); return; }
+    if (!amount || amount < 1)   { alert('Please enter a valid amount!'); return; }
+
+    fetch('{{ route("user.cart.add-bet") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
+        body: JSON.stringify({ bet_number: selectedNumber, bet_amount: amount, bet_type: ticketType })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ Added to cart! Cart has ' + data.cart_count + ' bet(s).');
+            closeTicketModal();
+            updateCartCount();
+        } else {
+            alert('❌ ' + data.message);
+        }
+    })
+    .catch(() => alert('❌ Something went wrong!'));
+}
 </script>
 
 @endsection

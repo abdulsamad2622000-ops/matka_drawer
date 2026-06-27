@@ -51,12 +51,13 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::get('/users/{user}',         [AdminUser::class, 'show'])->name('users.show');
     Route::post('/users/{user}/toggle', [AdminUser::class, 'toggleStatus'])->name('users.toggle');
 
-    Route::get('/announcements',                                       [AdminAnnouncement::class, 'index'])->name('announcements.index');
-    Route::get('/announcements/create',                                [AdminAnnouncement::class, 'create'])->name('announcements.create');
-    Route::post('/announcements',                                      [AdminAnnouncement::class, 'store'])->name('announcements.store');
-    Route::post('/announcements/{announcement}/destroy',               [AdminAnnouncement::class, 'destroy'])->name('announcements.destroy');
-    Route::post('/announcements/{announcement}/remove-winning-number', [AdminAnnouncement::class, 'removeWinningNumber'])->name('announcements.remove-winning-number');
-    Route::post('/announcements/{announcement}/set-next-draw',         [AdminAnnouncement::class, 'setNextDraw'])->name('announcements.set-next-draw');
+    Route::get('/announcements',                                          [AdminAnnouncement::class, 'index'])->name('announcements.index');
+    Route::get('/announcements/create',                                   [AdminAnnouncement::class, 'create'])->name('announcements.create');
+    Route::post('/announcements',                                         [AdminAnnouncement::class, 'store'])->name('announcements.store');
+    Route::post('/announcements/{announcement}/destroy',                  [AdminAnnouncement::class, 'destroy'])->name('announcements.destroy');
+    Route::post('/announcements/{announcement}/remove-winning-number',    [AdminAnnouncement::class, 'removeWinningNumber'])->name('announcements.remove-winning-number');
+    Route::post('/announcements/{announcement}/set-next-draw',            [AdminAnnouncement::class, 'setNextDraw'])->name('announcements.set-next-draw');
+    Route::post('/announcements/{announcement}/toggle-winners',           [AdminAnnouncement::class, 'toggleWinners'])->name('announcements.toggle-winners');
 
     Route::get('/support',                 [App\Http\Controllers\Admin\SupportController::class, 'index'])->name('support.index');
     Route::get('/support/{ticket}',        [App\Http\Controllers\Admin\SupportController::class, 'show'])->name('support.show');
@@ -69,8 +70,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
 Route::prefix('user')->name('user.')->middleware(['auth', 'verified.user'])->group(function () {
     Route::get('/dashboard', [UserDashboard::class, 'index'])->name('dashboard');
 
-    Route::get('/wallet',          [UserWallet::class, 'index'])->name('wallet.index');
-    Route::post('/wallet/deposit', [UserWallet::class, 'requestDeposit'])->name('wallet.deposit');
+    Route::get('/wallet',           [UserWallet::class, 'index'])->name('wallet.index');
+    Route::post('/wallet/deposit',  [UserWallet::class, 'requestDeposit'])->name('wallet.deposit');
     Route::post('/change-password', [UserWallet::class, 'changePassword'])->name('wallet.change-password');
 
     Route::get('/withdrawal',  [App\Http\Controllers\User\WithdrawalController::class, 'index'])->name('withdrawal.index');
@@ -86,9 +87,12 @@ Route::prefix('user')->name('user.')->middleware(['auth', 'verified.user'])->gro
     Route::get('/video/{draw}/active',  [UserVideo::class, 'checkActive'])->name('video.active');
 
     Route::get('/cart',                      [UserCart::class, 'index'])->name('cart.index');
-    Route::post('/cart/{lottery}/add',       [UserCart::class, 'add'])->name('cart.add');
+    Route::post('/cart/add-bet',             [UserCart::class, 'addBet'])->name('cart.add-bet');
     Route::delete('/cart/{cartItem}/remove', [UserCart::class, 'remove'])->name('cart.remove');
     Route::post('/cart/checkout',            [UserCart::class, 'checkout'])->name('cart.checkout');
+    Route::get('/cart/count', function() {
+        return response()->json(['count' => \App\Models\CartItem::where('user_id', auth()->id())->sum('quantity')]);
+    });
 
     Route::get('/bets',  [UserBet::class, 'index'])->name('bets.index');
     Route::post('/bets', [UserBet::class, 'store'])->name('bets.store');

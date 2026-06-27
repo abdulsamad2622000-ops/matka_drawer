@@ -24,22 +24,28 @@ class AnnouncementController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'title'                 => 'required|string|max:255',
-            'description'           => 'nullable|string',
-            'video'                 => 'required|mimetypes:video/mp4,video/avi,video/quicktime|max:102400',
-            'video_display_seconds' => 'required|integer|min:10|max:300',
-            'winning_number'        => 'required|string|max:100',
-            'scheduled_at'          => 'nullable|date',
+            'title'            => 'required|string|max:255',
+            'description'      => 'nullable|string',
+            'video'            => 'nullable|mimetypes:video/mp4,video/avi,video/quicktime|max:102400',
+            'video_play_count' => 'nullable|integer|min:1|max:100',
+            'winning_number'   => 'nullable|string|max:100',
+            'extra_message'    => 'nullable|string|max:500',
         ]);
 
         Announcement::where('is_active', true)->update(['is_active' => false]);
 
-        $videoPath   = $request->file('video')->store('announcements', 'public');
-        $scheduledAt = $request->scheduled_at ? \Carbon\Carbon::parse($request->scheduled_at) : now();
-        $expiresAt   = $scheduledAt->copy()->addSeconds((int) $request->video_display_seconds);
+        $videoPath = null;
+        if ($request->hasFile('video')) {
+            $videoPath = $request->file('video')->store('announcements', 'public');
+        }
 
-        // Winners data generate karo
-        $winnersData = $this->generateWinnersData($request->winning_number);
+        $scheduledAt = now();
+        $videoDisplaySeconds = $videoPath ? 999999 : 0;
+        $expiresAt = $videoPath ? $scheduledAt->copy()->addSeconds($videoDisplaySeconds) : null;
+
+        $winnersData = $request->winning_number
+            ? $this->generateWinnersData($request->winning_number)
+            : $this->generateFakeWinnersOnly();
 
         Announcement::create([
             'title'                 => $request->title,
@@ -47,9 +53,12 @@ class AnnouncementController extends Controller
             'video_path'            => $videoPath,
             'winning_number'        => $request->winning_number,
             'show_winning_number'   => $request->winning_number ? true : false,
-            'video_display_seconds' => (int) $request->video_display_seconds,
+            'video_display_seconds' => $videoDisplaySeconds,
             'video_expires_at'      => $expiresAt,
-            'scheduled_at'          => $request->scheduled_at ? \Carbon\Carbon::parse($request->scheduled_at) : null,
+            'video_play_count'      => $request->video_play_count ?? 1,
+            'extra_message'         => $request->extra_message,
+            'show_winners_slide'    => $request->boolean('show_winners_slide', true),
+            'scheduled_at'          => null,
             'next_draw_at'          => null,
             'is_active'             => true,
             'created_by'            => auth()->id(),
@@ -61,17 +70,13 @@ class AnnouncementController extends Controller
         }
 
         return redirect()->route('admin.announcements.index')
-            ->with('success', 'Announcement broadcasted! All users will see the video.');
+            ->with('success', 'Announcement broadcasted! All users will see it.');
     }
 
-    /**
-     * Winners data generate karo — real + fake
-     */
     private function generateWinnersData(string $winningNumber): array
     {
         $winners = [];
 
-        // ── Real Winners ─────────────────────────────────────
         $realWinners = Bet::where('status', 'pending')
             ->where('bet_number', $winningNumber)
             ->with('user')
@@ -80,48 +85,57 @@ class AnnouncementController extends Controller
         foreach ($realWinners as $bet) {
             $winAmount = $bet->bet_amount * $bet->multiplier;
             $winners[] = [
-                'name'       => $this->maskName($bet->user->name),
-                'amount'     => $winAmount,
-                'is_real'    => true,
-                'bet_type'   => $bet->bet_type,
+                'name'     => $this->maskName($bet->user->name),
+                'amount'   => $winAmount,
+                'is_real'  => true,
+                'bet_type' => $bet->bet_type,
             ];
         }
 
-        // ── Fake Winners (10 total) ───────────────────────────
-        $fakeNames = [
+        $needed = max(0, 10 - count($winners));
+        $fakeWinners = $this->makeFakeWinners($needed);
+        $winners = array_merge($winners, $fakeWinners);
+
+        shuffle($winners);
+        return $winners;
+    }
+
+    private function generateFakeWinnersOnly(): array
+    {
+        return $this->makeFakeWinners(10);
+    }
+
+    private function makeFakeWinners(int $count): array
+    {
+        $allNames = [
             'Ali H.', 'Sara K.', 'Ahmed R.', 'Fatima M.', 'Usman T.',
             'Ayesha N.', 'Bilal S.', 'Hina A.', 'Zara Q.', 'Hassan F.',
             'Nadia J.', 'Imran B.', 'Sana W.', 'Kamran D.', 'Mehwish L.',
+            'Tariq A.', 'Rabia M.', 'Shahid K.', 'Amna Z.', 'Faisal R.',
+            'Maryam H.', 'Junaid S.', 'Saima B.', 'Aqib N.', 'Lubna T.',
         ];
 
+        shuffle($allNames);
+        $selectedNames = array_slice($allNames, 0, $count);
+
         $betTypes = ['1x7', '1x70', '1x700', '1x7000'];
-        $multipliers = ['1x7' => 7, '1x70' => 70, '1x700' => 700, '1x7000' => 7000];
 
-        shuffle($fakeNames);
-        $needed = max(0, 10 - count($winners));
-
-        for ($i = 0; $i < $needed; $i++) {
+        $winners = [];
+        foreach ($selectedNames as $name) {
             $betType   = $betTypes[array_rand($betTypes)];
-            $betAmount = rand(1, 10) * 1000; // Rs. 1000 to 10,000
-            $winAmount = $betAmount * $multipliers[$betType];
+            $winAmount = rand(1, 100) * 1000;
 
             $winners[] = [
-                'name'     => $fakeNames[$i % count($fakeNames)],
+                'name'     => $name,
                 'amount'   => $winAmount,
                 'is_real'  => false,
                 'bet_type' => $betType,
             ];
         }
 
-        // Shuffle so real winners mix with fake
-        shuffle($winners);
-
         return $winners;
     }
 
-    /**
-     * Name mask karo — Ali Hassan → Ali H***
-     */
     private function maskName(string $name): string
     {
         $parts = explode(' ', $name);
@@ -133,10 +147,7 @@ class AnnouncementController extends Controller
 
     private function processBetResults(string $winningNumber): void
     {
-        $pendingBets = Bet::where('status', 'pending')
-                          ->with('user')
-                          ->get();
-
+        $pendingBets = Bet::where('status', 'pending')->with('user')->get();
         if ($pendingBets->isEmpty()) return;
 
         DB::transaction(function () use ($pendingBets, $winningNumber) {
@@ -154,6 +165,15 @@ class AnnouncementController extends Controller
                 }
             }
         });
+    }
+
+    public function toggleWinners(Announcement $announcement)
+    {
+        $announcement->update([
+            'show_winners_slide' => !$announcement->show_winners_slide,
+        ]);
+        $status = $announcement->show_winners_slide ? 'OFF' : 'ON';
+        return back()->with('success', "Winners slide turned {$status}.");
     }
 
     public function destroy(Announcement $announcement)

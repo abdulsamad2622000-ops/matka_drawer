@@ -75,11 +75,9 @@
         <a href="{{ route('user.cart.index') }}" style="position:relative;color:var(--text);font-size:20px;text-decoration:none">
             🛒
             @php $cartCount = \App\Models\CartItem::where('user_id', auth()->id())->sum('quantity'); @endphp
-            @if($cartCount > 0)
-            <span style="position:absolute;top:-6px;right:-8px;background:var(--teal);color:#fff;font-size:10px;font-weight:700;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center">
-                {{ $cartCount }}
+            <span id="cart-badge" style="position:absolute;top:-6px;right:-8px;background:var(--teal);color:#fff;font-size:10px;font-weight:700;width:16px;height:16px;border-radius:50%;display:{{ $cartCount > 0 ? 'flex' : 'none' }};align-items:center;justify-content:center">
+                {{ $cartCount > 0 ? $cartCount : '' }}
             </span>
-            @endif
         </a>
 
         {{-- Profile Dropdown --}}
@@ -141,10 +139,10 @@
                         <span>🔗</span> <span style="font-size:13px">My Referrals</span>
                     </a>
                     <a href="{{ route('user.support.index') }}"
-   style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;text-decoration:none;color:var(--text)"
-   onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='transparent'">
-    <span>🎧</span> <span style="font-size:13px">Support</span>
-</a>
+                       style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;text-decoration:none;color:var(--text)"
+                       onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='transparent'">
+                        <span>🎧</span> <span style="font-size:13px">Support</span>
+                    </a>
                     <a href="{{ route('user.wallet.index') }}#change-password"
                        style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;text-decoration:none;color:var(--text)"
                        onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='transparent'">
@@ -198,9 +196,11 @@
             @if(Route::has('user.cart.index'))
             <a href="{{ route('user.cart.index') }}" class="nav-item {{ request()->routeIs('user.cart*') ? 'active' : '' }}">
                 <span class="icon">🛒</span> My Cart
-                @php $cartCount = \App\Models\CartItem::where('user_id', auth()->id())->sum('quantity'); @endphp
-                @if($cartCount > 0)
-                <span class="badge active" style="margin-left:auto;font-size:10px">{{ $cartCount }}</span>
+                @php $sidebarCartCount = \App\Models\CartItem::where('user_id', auth()->id())->sum('quantity'); @endphp
+                @if($sidebarCartCount > 0)
+                <span id="sidebar-cart-badge" class="badge active" style="margin-left:auto;font-size:10px">{{ $sidebarCartCount }}</span>
+                @else
+                <span id="sidebar-cart-badge" class="badge active" style="margin-left:auto;font-size:10px;display:none"></span>
                 @endif
             </a>
             @endif
@@ -210,10 +210,9 @@
                     Rs. {{ number_format(auth()->user()->wallet_balance, 0) }}
                 </span>
             </a>
-<a href="{{ route('user.withdrawal.index') }}" class="nav-item {{ request()->routeIs('user.withdrawal*') ? 'active' : '' }}">
-    <span class="icon">💸</span> Withdraw
-</a>
-
+            <a href="{{ route('user.withdrawal.index') }}" class="nav-item {{ request()->routeIs('user.withdrawal*') ? 'active' : '' }}">
+                <span class="icon">💸</span> Withdraw
+            </a>
             <a href="{{ route('user.referrals.index') }}" class="nav-item {{ request()->routeIs('user.referrals*') ? 'active' : '' }}">
                 <span class="icon">🔗</span> Referrals
                 @if(auth()->user()->referredUsers()->count() > 0)
@@ -222,9 +221,9 @@
                 </span>
                 @endif
             </a>
-           <a href="{{ route('user.support.index') }}" class="nav-item {{ request()->routeIs('user.support*') ? 'active' : '' }}">
-    <span class="icon">🎧</span> Support
-</a>
+            <a href="{{ route('user.support.index') }}" class="nav-item {{ request()->routeIs('user.support*') ? 'active' : '' }}">
+                <span class="icon">🎧</span> Support
+            </a>
         </nav>
         <div class="sidebar-bottom">
             <div class="user-chip">
@@ -292,7 +291,25 @@ document.addEventListener('click', function(e) {
         drop.style.display = 'none';
     }
 });
-</script>
+
+// Real-time cart count update
+function updateCartCount() {
+    fetch('/user/cart/count')
+        .then(r => r.json())
+        .then(data => {
+            const badge = document.getElementById('cart-badge');
+            const sidebarBadge = document.getElementById('sidebar-cart-badge');
+            if (badge) {
+                badge.textContent = data.count > 0 ? data.count : '';
+                badge.style.display = data.count > 0 ? 'flex' : 'none';
+            }
+            if (sidebarBadge) {
+                sidebarBadge.textContent = data.count > 0 ? data.count : '';
+                sidebarBadge.style.display = data.count > 0 ? 'inline-block' : 'none';
+            }
+        }).catch(function(){});
+}
+setInterval(updateCartCount, 1000);</script>
 
 </body>
 </html>

@@ -20,6 +20,27 @@
 .ticket-body { padding:16px; }
 .ticket-grid { display:grid;gap:10px;margin-bottom:12px;max-height:240px;overflow-y:auto;padding:6px; }
 
+@keyframes brandingPulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50%      { opacity:0.7; transform:scale(1.03); }
+}
+@keyframes brandingGlow {
+    0%,100% { text-shadow: 0 0 20px rgba(0,184,148,0.5), 0 0 40px rgba(0,184,148,0.3); }
+    50%      { text-shadow: 0 0 40px rgba(0,184,148,0.9), 0 0 80px rgba(0,184,148,0.6); }
+}
+@keyframes tickerScroll {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+@keyframes floatDot {
+    0%,100% { transform: translateY(0px); }
+    50%      { transform: translateY(-8px); }
+}
+@keyframes slideWinners {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
 @media (max-width:768px) {
     .bet-cards-grid { grid-template-columns:repeat(2,1fr) !important; }
     .bet-card-top { height:90px !important; }
@@ -41,9 +62,8 @@
     </div>
 </div>
 
-
 {{-- WINNERS SLIDE --}}
-@if($activeAnnouncement && $activeAnnouncement->winners_data && count($activeAnnouncement->winners_data) > 0)
+@if($activeAnnouncement && $activeAnnouncement->show_winners_slide && $activeAnnouncement->winners_data && count($activeAnnouncement->winners_data) > 0)
 <div style="margin-bottom:12px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;overflow:hidden">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
         <span>🏆</span>
@@ -73,32 +93,76 @@
         </div>
     </div>
 </div>
-<style>
-@keyframes slideWinners {
-    0%   { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-}
-</style>
 @endif
+
+{{-- BRANDING BANNER (always present, hidden when video playing) --}}
+<div id="brandingBanner" style="display:none;margin-bottom:20px;border-radius:12px;overflow:hidden;border:2px solid var(--teal);position:relative;background:linear-gradient(135deg,#0a1628 0%,#0d2137 40%,#0a2020 100%);height:280px;flex-direction:column;align-items:center;justify-content:center">
+    <div style="position:absolute;inset:0;overflow:hidden;pointer-events:none">
+        <div style="position:absolute;width:6px;height:6px;background:var(--teal);border-radius:50%;top:20%;left:10%;opacity:0.4;animation:floatDot 3s ease-in-out infinite"></div>
+        <div style="position:absolute;width:4px;height:4px;background:var(--teal);border-radius:50%;top:60%;left:20%;opacity:0.3;animation:floatDot 4s ease-in-out infinite 1s"></div>
+        <div style="position:absolute;width:8px;height:8px;background:var(--teal);border-radius:50%;top:30%;right:15%;opacity:0.3;animation:floatDot 3.5s ease-in-out infinite 0.5s"></div>
+        <div style="position:absolute;width:5px;height:5px;background:#f59e0b;border-radius:50%;top:70%;right:25%;opacity:0.4;animation:floatDot 4.5s ease-in-out infinite 1.5s"></div>
+        <div style="position:absolute;width:6px;height:6px;background:#f59e0b;border-radius:50%;bottom:25%;left:40%;opacity:0.3;animation:floatDot 3.8s ease-in-out infinite 0.8s"></div>
+    </div>
+    <div style="text-align:center;z-index:1;animation:brandingPulse 3s ease-in-out infinite">
+        <div style="font-size:2.2rem;margin-bottom:4px">🎯</div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:2.4rem;font-weight:700;color:var(--teal);letter-spacing:4px;animation:brandingGlow 2.5s ease-in-out infinite">
+            MATKA CHAMPION
+        </div>
+        <div style="color:#aaa;font-size:12px;letter-spacing:6px;text-transform:uppercase;margin-top:4px">
+            Pakistan's #1 Lottery Platform
+        </div>
+    </div>
+    <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,184,148,0.15);border-top:1px solid rgba(0,184,148,0.3);padding:6px 0;overflow:hidden">
+        <div style="display:flex;white-space:nowrap;animation:tickerScroll 18s linear infinite;width:max-content">
+            <span style="color:var(--teal);font-size:12px;font-weight:600;padding:0 40px">🎯 Place your bets now!</span>
+            <span style="color:#f59e0b;font-size:12px;font-weight:600;padding:0 40px">🏆 Win big with 1x7000!</span>
+            <span style="color:var(--teal);font-size:12px;font-weight:600;padding:0 40px">💰 Fast withdrawals guaranteed!</span>
+            <span style="color:#f59e0b;font-size:12px;font-weight:600;padding:0 40px">🎯 Place your bets now!</span>
+            <span style="color:var(--teal);font-size:12px;font-weight:600;padding:0 40px">🏆 Win big with 1x7000!</span>
+            <span style="color:#f59e0b;font-size:12px;font-weight:600;padding:0 40px">💰 Fast withdrawals guaranteed!</span>
+        </div>
+    </div>
+</div>
 
 {{-- VIDEO BANNER --}}
 @if($activeAnnouncement)
-<div style="margin-bottom:20px;border-radius:12px;overflow:hidden;border:2px solid var(--teal);position:relative;background:#000">
-    @if($activeAnnouncement->isVideoVisible())
+<div style="margin-bottom:20px;border-radius:12px;overflow:hidden;border:2px solid var(--teal);position:relative;background:#000;min-height:280px" id="videoBannerWrap">
+    @if($activeAnnouncement->video_path && $activeAnnouncement->is_active)
+    @php $playCount = $activeAnnouncement->video_play_count ?? 1; @endphp
     <video id="dashVideo" controls
         controlsList="nodownload noremoteplayback noplaybackrate"
         disablePictureInPicture oncontextmenu="return false"
-        style="width:100%;display:block;height:220px;object-fit:contain;background:#000">
+        style="width:100%;display:block;height:280px;object-fit:cover;background:#000">
         <source src="{{ asset('storage/' . $activeAnnouncement->video_path) }}" type="video/mp4">
     </video>
-    <script>
-        const vid = document.getElementById('dashVideo');
-        if(vid) { vid.muted=true; vid.play().then(()=>{vid.muted=false;}).catch(()=>{}); }
-    </script>
     <div style="position:absolute;top:12px;left:12px;display:flex;align-items:center;gap:6px;background:rgba(0,0,0,0.6);padding:4px 10px;border-radius:10px">
         <span style="width:8px;height:8px;background:red;border-radius:50%;display:inline-block;animation:blink 1s infinite"></span>
         <span style="color:#fff;font-size:11px;font-weight:600">LIVE</span>
     </div>
+    <script>
+        (function() {
+            const vid = document.getElementById('dashVideo');
+            const totalPlays = {{ $playCount }};
+            let playedCount = 0;
+            if (vid) {
+                vid.muted = true;
+                vid.play().then(() => { vid.muted = false; }).catch(() => {});
+                vid.addEventListener('ended', function() {
+                    playedCount++;
+                    if (playedCount < totalPlays) {
+                        vid.currentTime = 0;
+                        vid.play();
+                    } else {
+                        const wrap = document.getElementById('videoBannerWrap');
+                        if (wrap) wrap.style.display = 'none';
+                        const branding = document.getElementById('brandingBanner');
+                        if (branding) branding.style.display = 'flex';
+                    }
+                });
+            }
+        })();
+    </script>
     @elseif($activeAnnouncement->winning_number)
     <div style="width:100%;min-height:220px;background:#000;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;padding:30px 20px">
         <div style="color:#aaa;font-size:13px;letter-spacing:3px;text-transform:uppercase;font-weight:600">🏆 Winning Number</div>
@@ -118,9 +182,17 @@
     <div style="background:var(--bg2);padding:10px 16px;display:flex;align-items:center;border-top:1px solid var(--border)">
         <span style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1rem">📢 {{ $activeAnnouncement->title }}</span>
     </div>
+    @if($activeAnnouncement->extra_message)
+    <div style="padding:10px 16px;background:rgba(0,184,148,0.08);border-top:1px solid var(--border)">
+        <span style="font-size:13px;color:var(--teal)">💬 {{ $activeAnnouncement->extra_message }}</span>
+    </div>
+    @endif
 </div>
+@else
+<script>
+    document.getElementById('brandingBanner').style.display = 'flex';
+</script>
 @endif
-
 
 {{-- STATS --}}
 <div class="stats-grid mini">
@@ -152,7 +224,6 @@
         </div>
     </a>
 </div>
-
 
 {{-- PLACE BET SECTION --}}
 <div style="margin-top:24px">
@@ -192,8 +263,6 @@
             <button onclick="closeTicketModal()" style="background:rgba(0,0,0,0.2);border:none;color:#fff;font-size:18px;cursor:pointer;border-radius:6px;padding:2px 8px">✕</button>
         </div>
         <div class="ticket-body">
-
-            {{-- Selected Number Display --}}
             <div style="text-align:center;margin-bottom:12px">
                 <span style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:2px">Selected Number</span>
                 <div id="selectedNumDisplay"
@@ -201,20 +270,13 @@
                     —
                 </div>
             </div>
-
-            {{-- Search Box --}}
             <div style="margin-bottom:10px">
-                <input type="text" id="ticketSearch"
-                       class="form-input"
+                <input type="text" id="ticketSearch" class="form-input"
                        placeholder="🔍 Type to search number..."
                        oninput="filterTickets(this.value)"
                        style="text-align:center;font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:700">
             </div>
-
-            {{-- Number Grid --}}
             <div id="ticketGrid" class="ticket-grid"></div>
-
-            {{-- Amount --}}
             <div class="form-group" style="margin-bottom:10px;margin-top:12px">
                 <label>Bet Amount (Rs.) *</label>
                 <input type="number" id="ticketAmount" class="form-input"
@@ -228,8 +290,6 @@
                 </button>
                 @endforeach
             </div>
-
-            {{-- Summary --}}
             <div style="background:rgba(0,184,148,0.05);border:1px solid rgba(0,184,148,.3);border-radius:10px;padding:12px;margin-bottom:14px">
                 <div style="display:flex;justify-content:space-between;margin-bottom:6px">
                     <span style="color:var(--text2);font-size:13px">Bet Amount:</span>
@@ -244,7 +304,6 @@
                     <span id="tDisplayWin" style="color:var(--teal);font-family:'Rajdhani',sans-serif;font-size:1.2rem;font-weight:700">Rs. 0</span>
                 </div>
             </div>
-
             <button type="button" onclick="submitTicketBet()" class="btn-primary full-width" style="font-size:1rem">
                 🎯 Place Bet
             </button>
@@ -280,7 +339,6 @@
         </div>
         @endif
     </div>
-
     <div class="card">
         <div class="card-header"><h3>💸 Recent Transactions</h3></div>
         @if($transactions->isEmpty())
@@ -307,6 +365,39 @@
     </div>
 </div>
 
+{{-- WITHDRAWALS --}}
+@if(isset($withdrawals) && $withdrawals->isNotEmpty())
+<div class="card" style="margin-top:24px">
+    <div class="card-header">
+        <h3>🏧 Recent Withdrawals</h3>
+        <a href="{{ route('user.withdrawal.index') }}" class="btn-sm">View All</a>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Amount</th><th>Method</th><th>Status</th><th>Date</th></tr></thead>
+            <tbody>
+                @foreach($withdrawals as $w)
+                <tr>
+                    <td class="bold">Rs. {{ number_format($w->amount, 0) }}</td>
+                    <td>{{ strtoupper($w->method ?? 'BANK') }}</td>
+                    <td>
+                        @if($w->status === 'approved')
+                        <span class="badge won">Approved ✓</span>
+                        @elseif($w->status === 'rejected')
+                        <span class="badge lost">Rejected ✗</span>
+                        @else
+                        <span class="badge pending">Pending ⏳</span>
+                        @endif
+                    </td>
+                    <td>{{ $w->created_at->format('d M Y') }}</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+</div>
+@endif
+
 <script>
 let ticketMultiplier = 7;
 let ticketType = '';
@@ -316,7 +407,6 @@ function openTicketModal(type, multiplier, total) {
     ticketMultiplier = multiplier;
     ticketType = type;
     selectedNumber = null;
-
     document.getElementById('ticketModal').style.display = 'flex';
     document.getElementById('ticketType').textContent = type;
     document.getElementById('tDisplayMultiplier').textContent = 'x' + multiplier;
@@ -325,147 +415,79 @@ function openTicketModal(type, multiplier, total) {
     document.getElementById('tDisplayAmount').textContent = 'Rs. 0';
     document.getElementById('tDisplayWin').textContent = 'Rs. 0';
     document.getElementById('ticketSearch').value = '';
-
     const grid = document.getElementById('ticketGrid');
     grid.innerHTML = '';
-
     let cols, padLen;
     if (type === '1x7')         { cols = 5;  padLen = 1; }
     else if (type === '1x70')   { cols = 10; padLen = 2; }
     else if (type === '1x700')  { cols = 10; padLen = 3; }
     else                         { cols = 10; padLen = 4; }
-
     grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-
     for (let i = 0; i < total; i++) {
         const num = String(i).padStart(padLen, '0');
-
         const ticket = document.createElement('div');
         ticket.dataset.num = num;
-        ticket.style.cssText = `
-            position:relative;
-            background:#f5a623;
-            border:2px solid #c47d0e;
-            border-radius:6px;
-            padding:9px 4px;
-            text-align:center;
-            cursor:pointer;
-            font-family:'Rajdhani',sans-serif;
-            font-size:13px;
-            font-weight:800;
-            color:#1a0a00;
-            transition:all .15s;
-            user-select:none;
-            overflow:visible;
-        `;
-        ticket.innerHTML = `
-            <span style="position:absolute;top:50%;left:-5px;transform:translateY(-50%);width:10px;height:10px;background:var(--bg2);border-radius:50%;border:1.5px solid #c47d0e;display:block;z-index:1"></span>
-            ${num}
-            <span style="position:absolute;top:50%;right:-5px;transform:translateY(-50%);width:10px;height:10px;background:var(--bg2);border-radius:50%;border:1.5px solid #c47d0e;display:block;z-index:1"></span>
-        `;
-        ticket.onmouseover = () => {
-            if (!ticket.classList.contains('active')) {
-                ticket.style.background = '#ffb830';
-                ticket.style.transform = 'scale(1.07)';
-            }
-        };
-        ticket.onmouseout = () => {
-            if (!ticket.classList.contains('active')) {
-                ticket.style.background = '#f5a623';
-                ticket.style.transform = 'scale(1)';
-            }
-        };
+        ticket.style.cssText = `position:relative;background:#f5a623;border:2px solid #c47d0e;border-radius:6px;padding:9px 4px;text-align:center;cursor:pointer;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:800;color:#1a0a00;transition:all .15s;user-select:none;overflow:visible;`;
+        ticket.innerHTML = `<span style="position:absolute;top:50%;left:-5px;transform:translateY(-50%);width:10px;height:10px;background:var(--bg2);border-radius:50%;border:1.5px solid #c47d0e;display:block;z-index:1"></span>${num}<span style="position:absolute;top:50%;right:-5px;transform:translateY(-50%);width:10px;height:10px;background:var(--bg2);border-radius:50%;border:1.5px solid #c47d0e;display:block;z-index:1"></span>`;
+        ticket.onmouseover = () => { if(!ticket.classList.contains('active')){ ticket.style.background='#ffb830'; ticket.style.transform='scale(1.07)'; } };
+        ticket.onmouseout  = () => { if(!ticket.classList.contains('active')){ ticket.style.background='#f5a623'; ticket.style.transform='scale(1)'; } };
         ticket.onclick = () => selectTicket(num, ticket);
         grid.appendChild(ticket);
     }
 }
-
 function filterTickets(query) {
-    const tickets = document.querySelectorAll('#ticketGrid div');
-    tickets.forEach(t => {
-        const num = t.dataset.num || '';
-        t.style.display = (!query || num.includes(query)) ? '' : 'none';
+    document.querySelectorAll('#ticketGrid div').forEach(t => {
+        t.style.display = (!query || t.dataset.num.includes(query)) ? '' : 'none';
     });
 }
-
 function selectTicket(num, el) {
     document.querySelectorAll('#ticketGrid div').forEach(t => {
-        t.style.background = '#f5a623';
-        t.style.borderColor = '#c47d0e';
-        t.style.color = '#1a0a00';
-        t.style.transform = 'scale(1)';
+        t.style.background='#f5a623'; t.style.borderColor='#c47d0e';
+        t.style.color='#1a0a00'; t.style.transform='scale(1)';
         t.classList.remove('active');
     });
-    el.style.background = '#00b894';
-    el.style.borderColor = '#007a63';
-    el.style.color = '#fff';
-    el.style.transform = 'scale(1.08)';
+    el.style.background='#00b894'; el.style.borderColor='#007a63';
+    el.style.color='#fff'; el.style.transform='scale(1.08)';
     el.classList.add('active');
     selectedNumber = num;
     document.getElementById('selectedNumDisplay').textContent = num;
     calcTicketWin();
 }
-
-function closeTicketModal() {
-    document.getElementById('ticketModal').style.display = 'none';
-}
-
-function setTicketAmount(amt) {
-    document.getElementById('ticketAmount').value = amt;
-    calcTicketWin();
-}
-
+function closeTicketModal() { document.getElementById('ticketModal').style.display = 'none'; }
+function setTicketAmount(amt) { document.getElementById('ticketAmount').value = amt; calcTicketWin(); }
 function calcTicketWin() {
     const amt = parseFloat(document.getElementById('ticketAmount').value) || 0;
     const win = amt * ticketMultiplier;
     document.getElementById('tDisplayAmount').textContent = 'Rs. ' + amt.toLocaleString();
     document.getElementById('tDisplayWin').textContent = 'Rs. ' + win.toLocaleString();
 }
-
 function submitTicketBet() {
     const amount = document.getElementById('ticketAmount').value;
     if (selectedNumber === null) { alert('Please select a number!'); return; }
     if (!amount || amount < 1)   { alert('Please enter a valid amount!'); return; }
-
     fetch('{{ route("user.bets.store") }}', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
-        },
-        body: JSON.stringify({
-            bet_number: selectedNumber,
-            bet_amount: amount,
-            bet_type:   ticketType
-        })
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
+        body: JSON.stringify({ bet_number: selectedNumber, bet_amount: amount, bet_type: ticketType })
     })
     .then(r => r.json())
     .then(data => {
-        if (data.success) {
-            alert('✅ ' + data.message);
-            closeTicketModal();
-            location.reload();
-        } else {
-            alert('❌ ' + data.message);
-        }
+        if (data.success) { alert('✅ ' + data.message); closeTicketModal(); location.reload(); }
+        else { alert('❌ ' + data.message); }
     })
-    .catch(err => {
-        alert('❌ Something went wrong!');
-        console.error(err);
-    });
+    .catch(() => alert('❌ Something went wrong!'));
 }
-
 function copyReferral() {
     const input = document.getElementById('referralLink');
     input.select();
     document.execCommand('copy');
     alert('✅ Referral link copied!');
 }
-
 document.getElementById('ticketModal').addEventListener('click', function(e) {
     if (e.target === this) closeTicketModal();
 });
 </script>
+
 {{-- REFERRAL SECTION --}}
 <div style="margin-top:24px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">

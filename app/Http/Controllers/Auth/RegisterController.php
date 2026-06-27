@@ -1,7 +1,5 @@
 <?php
-
 namespace App\Http\Controllers\Auth;
-
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Setting;
@@ -11,7 +9,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-
 class RegisterController extends Controller
 {
     public function showRegister(Request $request)
@@ -19,7 +16,6 @@ class RegisterController extends Controller
         $referralCode = $request->query('ref');
         return view('auth.register', compact('referralCode'));
     }
-
     public function register(Request $request)
     {
         $request->validate([
@@ -53,18 +49,10 @@ class RegisterController extends Controller
                 'referred_by'   => $referrer?->id,
             ]);
 
-            if ($referrer) {
-                $bonus = (float) Setting::get('referral_bonus', 100);
-                $referrer->creditWallet(
-                    $bonus,
-                    'referral_bonus',
-                    "Referral bonus — {$user->name} joined using your link"
-                );
-                $referrer->increment('referral_bonus_balance', $bonus);
-            }
+            // Signup pe koi bonus nahi — referrer ko deposit pe 10% milega
+            // (PaymentController mein handle hota hai)
 
             DB::commit();
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Registration failed: ' . $e->getMessage());

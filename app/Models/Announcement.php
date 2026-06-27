@@ -11,7 +11,8 @@ class Announcement extends Model
         'video_display_seconds', 'video_expires_at',
         'scheduled_at', 'next_draw_at',
         'is_active', 'created_by',
-        'winners_data',
+        'winners_data', 'video_play_count',
+        'extra_message', 'show_winners_slide',
     ];
     protected $casts = [
         'video_expires_at'    => 'datetime',
@@ -19,7 +20,9 @@ class Announcement extends Model
         'next_draw_at'        => 'datetime',
         'is_active'           => 'boolean',
         'show_winning_number' => 'boolean',
+        'show_winners_slide'  => 'boolean',
         'winners_data'        => 'array',
+        'video_play_count'    => 'integer',
     ];
     public function creator()
     {
@@ -30,9 +33,7 @@ class Announcement extends Model
         if ($this->scheduled_at && now()->lt($this->scheduled_at)) {
             return false;
         }
-        return $this->is_active
-            && $this->video_expires_at
-            && now()->lt($this->video_expires_at);
+        return $this->is_active && $this->video_path;
     }
     public function isScheduled(): bool
     {

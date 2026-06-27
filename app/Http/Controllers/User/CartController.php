@@ -4,53 +4,58 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\CartItem;
-use App\Models\LotteryPackage;
-use App\Models\LotteryTicket;
+use App\Models\Bet;
 use Illuminate\Http\Request;
 
 class CartController extends Controller
 {
     public function index()
     {
-        $cartItems = CartItem::where('user_id', auth()->id())
-            ->with('lotteryPackage')
-            ->get();
-
-        $total = $cartItems->sum('total_price');
-
+        $cartItems = CartItem::where('user_id', auth()->id())->latest()->get();
+        $total     = $cartItems->sum('bet_amount');
         return view('user.cart.index', compact('cartItems', 'total'));
     }
 
-    public function add(Request $request, LotteryPackage $lottery)
+    public function addBet(Request $request)
     {
         $request->validate([
-            'quantity' => 'required|integer|min:1|max:10'
+            'bet_number' => 'required|string|max:4',
+            'bet_type'   => 'required|in:1x7,1x70,1x700,1x7000',
+            'bet_amount' => 'required|numeric|min:1',
         ]);
 
-        $quantity = (int) $request->quantity;
+        $multiplier = match($request->bet_type) {
+            '1x7'    => 7,
+            '1x70'   => 70,
+            '1x700'  => 700,
+            '1x7000' => 7000,
+            default  => 7,
+        };
 
-        // Check if already in cart
-        $existing = CartItem::where('user_id', auth()->id())
-            ->where('lottery_package_id', $lottery->id)
-            ->first();
+        $padLength = match($request->bet_type) {
+            '1x7'    => 1,
+            '1x70'   => 2,
+            '1x700'  => 3,
+            '1x7000' => 4,
+            default  => 1,
+        };
 
-        if ($existing) {
-            $newQty = $existing->quantity + $quantity;
-            $existing->update([
-                'quantity'    => $newQty,
-                'total_price' => $lottery->price * $newQty,
-            ]);
-        } else {
-            CartItem::create([
-                'user_id'            => auth()->id(),
-                'lottery_package_id' => $lottery->id,
-                'quantity'           => $quantity,
-                'price_per_ticket'   => $lottery->price,
-                'total_price'        => $lottery->price * $quantity,
-            ]);
-        }
+        $betNumber    = str_pad($request->bet_number, $padLength, '0', STR_PAD_LEFT);
+        $potentialWin = $request->bet_amount * $multiplier;
 
-        return back()->with('success', 'Added to cart!');
+        CartItem::create([
+            'user_id'       => auth()->id(),
+            'bet_number'    => $betNumber,
+            'bet_type'      => $request->bet_type,
+            'bet_amount'    => $request->bet_amount,
+            'potential_win' => $potentialWin,
+        ]);
+
+        return response()->json([
+            'success'    => true,
+            'message'    => "Added to cart!",
+            'cart_count' => CartItem::where('user_id', auth()->id())->count(),
+        ]);
     }
 
     public function remove(CartItem $cartItem)
@@ -59,62 +64,44 @@ class CartController extends Controller
             abort(403);
         }
         $cartItem->delete();
-        return back()->with('success', 'Removed from cart.');
+        return back()->with('success', '🗑️ Removed from cart.');
     }
 
     public function checkout()
     {
         $user      = auth()->user();
-        $cartItems = CartItem::where('user_id', $user->id)
-            ->with('lotteryPackage')
-            ->get();
+        $cartItems = CartItem::where('user_id', $user->id)->get();
 
         if ($cartItems->isEmpty()) {
             return back()->with('error', 'Your cart is empty!');
         }
 
-        $total = $cartItems->sum('total_price');
+        $total = $cartItems->sum('bet_amount');
 
         if ($user->wallet_balance < $total) {
             return back()->with('error', 'Insufficient wallet balance! Please top up your wallet.');
         }
 
         foreach ($cartItems as $item) {
-            $lottery = $item->lotteryPackage;
-
-            if ($lottery->status !== 'active') {
-                return back()->with('error', $lottery->name . ' is no longer available.');
-            }
-
-            if ($lottery->availableTickets() < $item->quantity) {
-                return back()->with('error', 'Not enough tickets for ' . $lottery->name);
-            }
-
-            // Debit wallet
             $user->debitWallet(
-                $item->total_price,
+                $item->bet_amount,
                 'lottery_purchase',
-                "Purchased {$item->quantity} ticket(s) for: {$lottery->name}"
+                "Bet placed on number {$item->bet_number} ({$item->bet_type})"
             );
 
-            // Create tickets
-            for ($i = 0; $i < $item->quantity; $i++) {
-                LotteryTicket::create([
-                    'user_id'            => $user->id,
-                    'lottery_package_id' => $lottery->id,
-                    'amount_paid'        => $lottery->price,
-                    'status'             => 'active',
-                ]);
-            }
-
-            // Update sold count
-            $lottery->increment('sold_tickets', $item->quantity);
+            Bet::create([
+                'user_id'       => $user->id,
+                'bet_number'    => $item->bet_number,
+                'bet_amount'    => $item->bet_amount,
+                'bet_type'      => $item->bet_type,
+                'potential_win' => $item->potential_win,
+                'status'        => 'pending',
+            ]);
         }
 
-        // Clear cart
         CartItem::where('user_id', $user->id)->delete();
 
-        return redirect()->route('user.dashboard')
-            ->with('success', '🎉 Checkout successful! Your tickets have been issued.');
+        return redirect()->route('user.bets.index')
+            ->with('success', '🎉 All bets placed successfully!');
     }
 }
