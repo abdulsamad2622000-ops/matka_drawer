@@ -20,6 +20,6 @@ class DashboardController extends Controller
             'total_bet_amount' => Bet::sum('bet_amount'),
         ];
 
-        return view('admin.dashboard', compact('recentBets', 'recentPayments', 'stats'));
+        return view('admin.dashboard.index', compact('recentBets', 'recentPayments', 'stats'));
     }
 }

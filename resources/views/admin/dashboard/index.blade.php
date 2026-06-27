@@ -189,7 +189,7 @@ function filterBets() {
 // URL filter auto apply
 const urlParams = new URLSearchParams(window.location.search);
 const urlFilter = urlParams.get('filter');
-if (urlFilter === 'pending') {
+if (urlFilter === 'pending' || !urlFilter) {
     document.getElementById('filterStatus').value = 'pending';
     filterBets();
 }
