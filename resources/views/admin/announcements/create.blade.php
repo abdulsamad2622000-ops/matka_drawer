@@ -62,6 +62,7 @@
         </div>
         <div class="form-group">
             <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+                <input type="hidden" name="show_winners_slide" value="0">
                 <input type="checkbox" name="show_winners_slide" value="1"
                        {{ old('show_winners_slide', '1') == '1' ? 'checked' : '' }}
                        style="width:18px;height:18px;cursor:pointer">

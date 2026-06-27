@@ -50,6 +50,12 @@
 @media (max-width:480px) {
     .bet-cards-grid { grid-template-columns:repeat(2,1fr) !important; }
 }
+
+/* Video controls completely hidden */
+video::-webkit-media-controls { display:none !important; }
+video::-webkit-media-controls-enclosure { display:none !important; }
+video::-webkit-media-controls-panel { display:none !important; }
+video::--moz-media-controls { display:none !important; }
 </style>
 
 {{-- PAGE HEADER --}}
@@ -95,8 +101,8 @@
 </div>
 @endif
 
-{{-- BRANDING BANNER (always present, hidden when video playing) --}}
-<div id="brandingBanner" style="display:none;margin-bottom:20px;border-radius:12px;overflow:hidden;border:2px solid var(--teal);position:relative;background:linear-gradient(135deg,#0a1628 0%,#0d2137 40%,#0a2020 100%);height:280px;flex-direction:column;align-items:center;justify-content:center">
+{{-- BRANDING BANNER --}}
+<div id="brandingBanner" style="display:none;margin-bottom:20px;border-radius:12px;overflow:hidden;border:2px solid var(--teal);position:relative;background:linear-gradient(135deg,#0a1628 0%,#0d2137 40%,#0a2020 100%);height:400px;flex-direction:column;align-items:center;justify-content:center">
     <div style="position:absolute;inset:0;overflow:hidden;pointer-events:none">
         <div style="position:absolute;width:6px;height:6px;background:var(--teal);border-radius:50%;top:20%;left:10%;opacity:0.4;animation:floatDot 3s ease-in-out infinite"></div>
         <div style="position:absolute;width:4px;height:4px;background:var(--teal);border-radius:50%;top:60%;left:20%;opacity:0.3;animation:floatDot 4s ease-in-out infinite 1s"></div>
@@ -127,18 +133,21 @@
 
 {{-- VIDEO BANNER --}}
 @if($activeAnnouncement)
-<div style="margin-bottom:20px;border-radius:12px;overflow:hidden;border:2px solid var(--teal);position:relative;background:#000;min-height:280px" id="videoBannerWrap">
+<div style="margin-bottom:20px;border-radius:12px;overflow:hidden;border:2px solid var(--teal);position:relative;background:#000;" id="videoBannerWrap">
     @if($activeAnnouncement->video_path && $activeAnnouncement->is_active)
     @php $playCount = $activeAnnouncement->video_play_count ?? 1; @endphp
-    <video id="dashVideo" controls
-        controlsList="nodownload noremoteplayback noplaybackrate"
-        disablePictureInPicture oncontextmenu="return false"
-        style="width:100%;display:block;height:280px;object-fit:cover;background:#000">
+    <video id="dashVideo"
+        disablePictureInPicture
+        oncontextmenu="return false"
+        style="width:100%;display:block;height:400px;object-fit:contain;background:#000;">
         <source src="{{ asset('storage/' . $activeAnnouncement->video_path) }}" type="video/mp4">
     </video>
-    <div style="position:absolute;top:12px;left:12px;display:flex;align-items:center;gap:6px;background:rgba(0,0,0,0.6);padding:4px 10px;border-radius:10px">
-        <span style="width:8px;height:8px;background:red;border-radius:50%;display:inline-block;animation:blink 1s infinite"></span>
-        <span style="color:#fff;font-size:11px;font-weight:600">LIVE</span>
+    {{-- Play/Pause Button - inside video top-left --}}
+    <div style="position:absolute;top:12px;left:12px;z-index:10;display:flex;align-items:center;gap:8px">
+        <button id="playPauseBtn" onclick="toggleVideoPlay()"
+            style="background:rgba(0,0,0,0.65);border:none;color:#fff;border-radius:6px;width:38px;height:38px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+            ⏸
+        </button>
     </div>
     <script>
         (function() {
@@ -154,14 +163,27 @@
                         vid.currentTime = 0;
                         vid.play();
                     } else {
-                        const wrap = document.getElementById('videoBannerWrap');
-                        if (wrap) wrap.style.display = 'none';
-                        const branding = document.getElementById('brandingBanner');
-                        if (branding) branding.style.display = 'flex';
+                        document.getElementById('videoBannerWrap').style.display = 'none';
+                        document.getElementById('brandingBanner').style.display = 'flex';
                     }
                 });
             }
         })();
+
+        function toggleVideoPlay() {
+            const vid = document.getElementById('dashVideo');
+            const btn = document.getElementById('playPauseBtn');
+            const txt = document.getElementById('videoStatusText');
+            if (vid.paused) {
+                vid.play();
+                btn.textContent = '⏸';
+                if(txt) txt.textContent = 'Playing';
+            } else {
+                vid.pause();
+                btn.textContent = '▶';
+                if(txt) txt.textContent = 'Paused';
+            }
+        }
     </script>
     @elseif($activeAnnouncement->winning_number)
     <div style="width:100%;min-height:220px;background:#000;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;padding:30px 20px">
@@ -493,11 +515,11 @@ document.getElementById('ticketModal').addEventListener('click', function(e) {
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
         <h3 style="margin:0">🔗 Invite Friends & Earn Bonus</h3>
         <span style="font-size:12px;color:var(--text2)">
-            Bonus per referral: <strong style="color:var(--teal)">Rs. {{ \App\Models\Setting::get('referral_bonus', 100) }}</strong>
+            Bonus per referral: <strong style="color:var(--teal)">10% of each deposit</strong>
         </span>
     </div>
     <p style="color:var(--text2);font-size:13px;margin-bottom:12px">
-        Share your referral link — when your friend signs up, you get a bonus in your wallet!
+        Share your referral link — jab friend deposit kare, aapko us deposit ka 10% milega!
     </p>
     <div style="display:flex;gap:8px;align-items:center">
         <input type="text" id="referralLink" readonly

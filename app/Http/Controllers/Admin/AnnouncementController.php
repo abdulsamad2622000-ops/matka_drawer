@@ -57,7 +57,7 @@ class AnnouncementController extends Controller
             'video_expires_at'      => $expiresAt,
             'video_play_count'      => $request->video_play_count ?? 1,
             'extra_message'         => $request->extra_message,
-            'show_winners_slide'    => $request->boolean('show_winners_slide', true),
+            'show_winners_slide'    => $request->input('show_winners_slide', 0) == '1' ? true : false,
             'scheduled_at'          => null,
             'next_draw_at'          => null,
             'is_active'             => true,
